@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import PhotoGallery from '../components/PhotoGallery';
 import { usePhotos } from '@/hooks/usePhotos';
+import { Button } from "@/components/ui/button"
+import { QuizDialog } from '@/components/QuizDialog';
 
 export default function FrontCameraCapture() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -69,7 +71,6 @@ export default function FrontCameraCapture() {
   };
 
   const takeQuiz = () => {
-    // TODO:
     console.log("Lets quiz")
   }
 
@@ -127,22 +128,16 @@ export default function FrontCameraCapture() {
         <div className="flex flex-col space-y-3">
           {isStreaming && (
             <>
-              <button
+              <Button
                 onClick={takePhoto}
-                className="bg-green-500  text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
                 Take Photo
-              </button>
+              </Button>
             </>
           )}
           {photos.length > 0 && (
             <>
-              <button
-                onClick={takeQuiz}
-                className="bg-red-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-              >
-                Take Quiz
-              </button>
+              <QuizDialog onClick={takeQuiz} />
             </>
           )}
         </div>
