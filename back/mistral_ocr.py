@@ -29,7 +29,8 @@ def process_image_to_text(image_path: str) -> str:
         document={
             "type": "image_url",
             "image_url": f"data:image/webp;base64,{encoded_image}"
-        }
+        },
+        include_image_base64=True
     )
     
     # Extract markdown text from the OCR response
@@ -40,3 +41,14 @@ def process_image_to_text(image_path: str) -> str:
                 extracted_text += page.markdown + "\n"
     
     return extracted_text.strip()
+
+if __name__ == "__main__":
+    image_path = "/Users/arian/Documents/my_github_portfolio/tech-europe-hackathon/test-assets/page1.webp"
+    print("Processing image:", image_path)
+    extracted_text = process_image_to_text(image_path)
+    print("\nExtracted Markdown Text:")
+    print(extracted_text)
+
+    quiz = quiz_generator.main(extracted_text)
+    for item in quiz:
+        print(item)
