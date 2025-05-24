@@ -31,11 +31,8 @@ export function SiteHeader() {
           <SheetContent side="right" className="w-[80%] max-w-sm">
             <SheetTitle className="text-left">Navigation Menu</SheetTitle>
             <nav className="flex flex-col space-y-6 pt-6">
-              <Link href="/" className="text-lg font-bold">
-                Tech Europe
-              </Link>
-              <Link href="/about" className="text-lg">Quiz</Link>
-              <Link href="/blog" className="text-lg">Galery</Link>
+              <Link href="/" className="text-lg">Quiz</Link>
+              <Link href="/galery" className="text-lg">Galery</Link>
             </nav>
           </SheetContent>
         </Sheet>

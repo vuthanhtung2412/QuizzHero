@@ -68,6 +68,11 @@ export default function FrontCameraCapture() {
     }
   };
 
+  const takeQuiz = () => {
+    // TODO:
+    console.log("Lets quiz")
+  }
+
 
   // Check if camera API is supported and start camera automatically
   useEffect(() => {
@@ -124,9 +129,19 @@ export default function FrontCameraCapture() {
             <>
               <button
                 onClick={takePhoto}
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                className="bg-green-500  text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
                 Take Photo
+              </button>
+            </>
+          )}
+          {photos.length > 0 && (
+            <>
+              <button
+                onClick={takeQuiz}
+                className="bg-red-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Take Quiz
               </button>
             </>
           )}
