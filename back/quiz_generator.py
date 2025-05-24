@@ -89,24 +89,20 @@ class QuizGenerator:
             {"role": "user", "content": prompt},
         ]
 
-        try:
-            # Get response from Mistral AI
-            chat_response = self.client.chat.parse(
-                model="mistral-large-latest",
-                messages=messages,
-                response_format=QuestionsAnswers,
-                temperature=0.7,
-                max_tokens=10000
-            )
+        
+        chat_response = self.client.chat.parse(
+            model="mistral-large-latest",
+            messages=messages,
+            response_format=QuestionsAnswers,
+            temperature=0.7,
+            max_tokens=10000
+        )
 
-            parsed_response = chat_response.choices[0].message.parsed
-            questions_list = parsed_response.questions
-            answers_list = parsed_response.answers
+        parsed_response = chat_response.choices[0].message.parsed
+        questions_list = parsed_response.questions
+        answers_list = parsed_response.answers
 
-            return questions_list[:num_questions],answers_list[:num_questions]
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return []
+        return questions_list[:num_questions],answers_list[:num_questions]
 
 def main(input_text):
     api_key = os.environ["MISTRAL_API_KEY"]
