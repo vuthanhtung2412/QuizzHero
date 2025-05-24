@@ -1,5 +1,6 @@
 "use client"
 
+import { BACKEND_URL } from "@/const"
 import { useState, useRef, useCallback } from "react"
 
 export interface AudioRecording {
@@ -15,6 +16,7 @@ export function useVoiceRecorder() {
   const [recordings, setRecordings] = useState<AudioRecording[]>([])
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [sessionId, setSessionId] = useState(0)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -37,6 +39,17 @@ export function useVoiceRecorder() {
   }, [])
 
   const init = useCallback(async () => {
+    const result = await fetch(`/api/session`, {
+      method: 'POST',
+    });
+
+    if (!result.ok) {
+      throw new Error('Failed to create session');
+    }
+
+    const data = await result.json();
+    setSessionId(data.session_id);
+
     await requestMicrophonePermission()
   }, [requestMicrophonePermission])
 
@@ -51,10 +64,10 @@ export function useVoiceRecorder() {
     recordingStartTimeRef.current = Date.now()
 
     // Try to use audio/mp4 first, fallback to audio/webm
-    const mimeType = MediaRecorder.isTypeSupported('audio/mp4') 
-      ? 'audio/mp4' 
-      : MediaRecorder.isTypeSupported('audio/webm') 
-        ? 'audio/webm' 
+    const mimeType = MediaRecorder.isTypeSupported('audio/mp4')
+      ? 'audio/mp4'
+      : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
         : 'audio/ogg';
 
     const mediaRecorder = new MediaRecorder(stream, {
@@ -143,6 +156,7 @@ export function useVoiceRecorder() {
     recordings,
     hasPermission,
     isLoading,
+    sessionId,
     startRecording,
     stopRecording,
     toggleRecording,

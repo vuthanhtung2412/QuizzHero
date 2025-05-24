@@ -135,6 +135,7 @@ export default function FrontCameraCapture() {
           {/* {true && ( */}
           {photos.length > 0 && (
             <>
+              {/* TODO: Put the image url in the property of this quiz dialog */}
               <QuizDialog />
             </>
           )}
