@@ -65,7 +65,7 @@ class QuizGenerator:
             return []
 
 def main():
-    api_key = ""
+    api_key = os.environ["MISTRAL_API_KEY"]
     generator = QuizGenerator(api_key)
 
     sample_text = """
