@@ -1,4 +1,10 @@
 export const VOICES_IDS = {
-  oxley: "gOkFV1JMCt0G0n9xmBwV",
-  jessica: "g6xIsTj2HwM6VR4iXFCw",
+  oxley: {
+    id: "gOkFV1JMCt0G0n9xmBwV",
+    speed: 1.15,
+  },
+  jessica: {
+    id: "g6xIsTj2HwM6VR4iXFCw",
+    speed: 1,
+  },
 } as const
