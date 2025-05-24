@@ -148,7 +148,7 @@ class SessionAnswerRequest(BaseModel):
     user_answer: str
 class SessionAnswerResponse(BaseModel):
     response: str
-@app.post("/post_session_answer", response_model=SessionAnswerResponse)
+@app.post("/session/{id}/answer", response_model=SessionAnswerResponse)
 def post_session_answer(request: SessionAnswerRequest, response_model=SessionAnswerResponse):
     """
     answer to the first question from the quizz
