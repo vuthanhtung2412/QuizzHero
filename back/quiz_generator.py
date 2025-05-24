@@ -17,7 +17,47 @@ class QuizGenerator:
         self.client = Mistral(api_key=api_key)
 
     def generate_feedback(self, markdown_text: str, question: str, right_answer: str, user_answer: str) -> str:
-        pass
+        """
+        Generate feedback for a user's answer by comparing it with the correct answer.
+
+        Args:
+            markdown_text (str): The original text the question was based on
+            question (str): The question that was asked
+            right_answer (str): The correct answer
+            user_answer (str): The user's submitted answer
+
+        Returns:
+            str: Brief feedback about the user's answer
+        """
+        prompt = f"""Give a one-sentence personalized feedback on the answer. Use "you" and "your" to make it more personal.
+        If the answer is correct, start with encouraging phrases like "Well done!", "Great job!", or "Keep going!" before giving the feedback.
+        If the answer is incorrect, start with encouraging phrases like "No worries!", "Keep going!", or "You're getting there!" before explaining what was wrong and giving a hint.
+        If the user doesn't know the answer, be encouraging and give a hint about where to find the answer in the text.
+        If the answer is correct but too detailed, suggest how to make it more concise.
+
+        Context:
+        {markdown_text}
+
+        Question: {question}
+        Correct answer: {right_answer}
+        Your answer: {user_answer}
+
+        Keep it to one sentence and make it encouraging:"""
+
+        messages = [
+            {"role": "system", "content": "You are a supportive teacher providing personalized, encouraging feedback on answers."},
+            {"role": "user", "content": prompt}
+        ]
+
+        
+        chat_response = self.client.chat.complete(
+            model="mistral-large-latest",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=500
+        )
+        
+        return chat_response.choices[0].message.content
 
     def generate_quiz(self, markdown_text: str, num_questions: int = 10) -> List[Tuple[str, str]]:
         """
