@@ -65,8 +65,8 @@ export default function FrontCameraCapture() {
       }
 
       // Convert to data URL and add to photos array
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-      await createPhoto(dataUrl);
+      const dataUrlBase64 = canvas.toDataURL('image/jpeg', 0.9);
+      await createPhoto(dataUrlBase64);
     }
   };
 
@@ -135,14 +135,13 @@ export default function FrontCameraCapture() {
           {/* {true && ( */}
           {photos.length > 0 && (
             <>
-              {/* TODO: Put the image url in the property of this quiz dialog */}
-              <QuizDialog />
+              <QuizDialog photosBase64Url={photos.map(photo => photo.base64Url)} />
             </>
           )}
         </div>
 
         {/* Photo Gallery */}
-        <PhotoGallery photos={photos.map((photo) => photo.url)} onDeletePhoto={deletePhoto} />
+        <PhotoGallery photos={photos.map((photo) => photo.base64Url)} onDeletePhoto={deletePhoto} />
       </div>
     </div>
   );

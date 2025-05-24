@@ -5,41 +5,68 @@ from dotenv import load_dotenv
 import quiz_generator
 load_dotenv()
 
-def process_image_to_text(image_path: str) -> str:
+def process_image_to_text(base64_image: str) -> str:
     """
-    Process an image file and extract text using Mistral OCR.
-    
+    Process a base64 encoded image and extract text using Mistral OCR.
+
     Args:
-        image_path (str): Path to the image file
-        
+        base64_image (str): Base64 encoded image string
+
     Returns:
         str: Extracted text from the image
     """
-    api_key = os.environ["MISTRAL_API_KEY"]
-    client = Mistral(api_key=api_key)
-    
+    try:
+        api_key = os.environ["MISTRAL_API_KEY"]
+        client = Mistral(api_key=api_key)
+
+        # Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
+        if ',' in base64_image:
+            base64_image = base64_image.split(',')[1]
+
+        print("Processing base64 image with Mistral OCR")
+
+        # Use the base64-encoded image in the request
+        ocr_response = client.ocr.process(
+            model="mistral-ocr-latest",
+            document={
+                "type": "image_url",
+                "image_url": f"data:image/jpeg;base64,{base64_image}"
+            },
+            include_image_base64=True
+        )
+
+        # Extract markdown text from the OCR response
+        extracted_text = ""
+        if hasattr(ocr_response, 'pages'):
+            for page in ocr_response.pages:
+                if hasattr(page, 'markdown'):
+                    extracted_text += page.markdown + "\n"
+
+        result = extracted_text.strip()
+        print(f"OCR processing completed, extracted {len(result)} characters")
+        return result
+
+    except Exception as e:
+        print(f"Error during OCR processing: {str(e)}")
+        # Return a fallback message instead of crashing
+        return f"[OCR Error: Could not process image - {str(e)}]"
+
+def process_image_file_to_text(image_path: str) -> str:
+    """
+    Process an image file and extract text using Mistral OCR.
+
+    Args:
+        image_path (str): Path to the image file
+
+    Returns:
+        str: Extracted text from the image
+    """
     # Read the image file and encode it in base64
     with open(image_path, "rb") as image_file:
         encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-        print("Image encoded successfully")
+        print("Image file encoded successfully")
 
-    # Use the base64-encoded image in the request
-    ocr_response = client.ocr.process(
-        model="mistral-ocr-latest",
-        document={
-            "type": "image_url",
-            "image_url": f"data:image/webp;base64,{encoded_image}"
-        },
-        include_image_base64=True
-    )
-    
-    # Extract markdown text from the OCR response
-    extracted_text = ""
-    if hasattr(ocr_response, 'pages'):
-        for page in ocr_response.pages:
-            if hasattr(page, 'markdown'):
-                extracted_text += page.markdown + "\n"
-    
-    return extracted_text.strip()
+    # Use the existing base64 processing function
+    return process_image_to_text(encoded_image)
 
 # process_image_to_text("../test-assets/page1.webp")

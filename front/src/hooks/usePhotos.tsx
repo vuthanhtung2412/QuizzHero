@@ -1,21 +1,18 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useState } from 'react';
 
 export type Photo = {
-  url: string;
-  transcript?: string;
+  base64Url: string;
 }
 
 export const usePhotos = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
 
-  const createPhoto = async (url: string) => {
-    let transcript = 'Mock transcript';
-    // TODO: Add transcript logic here
-    setPhotos(prev => [...prev, { url, transcript }]);
+  const createPhoto = async (base64Url: string) => {
+    setPhotos(prev => [...prev, { base64Url }]);
   }
 
-  const deletePhoto = (url: string) => {
-    setPhotos(photos => photos.filter(photo => photo.url !== url));
+  const deletePhoto = (base64Url: string) => {
+    setPhotos(photos => photos.filter(photo => photo.base64Url !== base64Url));
   }
 
   return {

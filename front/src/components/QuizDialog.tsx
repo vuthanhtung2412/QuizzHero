@@ -8,15 +8,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog"
 import { Mic, X, Square, Loader2 } from "lucide-react"
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder"
 
 export function QuizDialog(
-  // TODO: property to access the list of images
   props: {
-    photos?: string[] // Optional array of image URLs
+    photosBase64Url?: string[]
   }
 ) {
   const [open, setOpen] = useState(false)
@@ -32,13 +31,40 @@ export function QuizDialog(
     init
   } = useVoiceRecorder()
 
-  // TODO: send the images to the backend
+  // Handle dialog open/close
   const handleOpenChange = useCallback(async (isOpen: boolean) => {
     setOpen(isOpen)
     if (isOpen) {
       await init()
     }
   }, [init])
+
+  // Upload photos when sessionId becomes available and dialog is open
+  useEffect(() => {
+    if (open && sessionId && props.photosBase64Url && props.photosBase64Url.length > 0) {
+      const uploadPhotos = async () => {
+        try {
+          const photos = props.photosBase64Url!.map(base64Url => ({ base64Url }));
+          const response = await fetch(`/api/session/${sessionId}/photos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photos })
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            console.log('Photos uploaded successfully:', data.message);
+          } else {
+            console.error('Failed to upload photos:', data.error);
+          }
+        } catch (error) {
+          console.error('Error uploading photos:', error);
+        }
+      }
+      uploadPhotos()
+    }
+  }, [open, sessionId, props.photosBase64Url])
 
   // Cleanup when component unmounts
   useEffect(() => {
