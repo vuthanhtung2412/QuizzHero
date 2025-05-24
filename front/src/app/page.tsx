@@ -2,13 +2,18 @@
 
 import { useState, useRef, useEffect } from 'react';
 import PhotoGallery from '../components/PhotoGallery';
+import { usePhotos } from '@/hooks/usePhotos';
 
 export default function FrontCameraCapture() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState('');
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const {
+    photos,
+    createPhoto,
+    deletePhoto
+  } = usePhotos()
 
   const startCamera = async () => {
     try {
@@ -45,7 +50,7 @@ export default function FrontCameraCapture() {
     }
   };
 
-  const takePhoto = () => {
+  const takePhoto = async () => {
     if (videoRef.current) {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
@@ -59,13 +64,10 @@ export default function FrontCameraCapture() {
 
       // Convert to data URL and add to photos array
       const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-      setPhotos(prevPhotos => [...prevPhotos, dataUrl]);
+      await createPhoto(dataUrl);
     }
   };
 
-  const deletePhoto = (index: number) => {
-    setPhotos(prevPhotos => prevPhotos.filter((_, i) => i !== index));
-  };
 
   // Check if camera API is supported and start camera automatically
   useEffect(() => {
@@ -131,7 +133,7 @@ export default function FrontCameraCapture() {
         </div>
 
         {/* Photo Gallery */}
-        <PhotoGallery photos={photos} onDeletePhoto={deletePhoto} />
+        <PhotoGallery photos={photos.map((photo) => photo.url)} onDeletePhoto={deletePhoto} />
       </div>
     </div>
   );

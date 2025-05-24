@@ -2,7 +2,7 @@ import React from 'react';
 
 interface PhotoGalleryProps {
   photos: string[];
-  onDeletePhoto?: (index: number) => void;
+  onDeletePhoto?: (url: string) => void;
 }
 
 export default function PhotoGallery({ photos, onDeletePhoto }: PhotoGalleryProps) {
@@ -25,7 +25,7 @@ export default function PhotoGallery({ photos, onDeletePhoto }: PhotoGalleryProp
           />
           {onDeletePhoto && (
             <button
-              onClick={() => onDeletePhoto(index)}
+              onClick={() => onDeletePhoto(photoUrl)}
               className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <svg

@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type Photos = {
+export type Photo = {
   url: string;
   transcript?: string;
 }
 
-export const useRepository = () => {
-  const [photos, setPhotos] = useState<Photos[]>([]);
+export const usePhotos = () => {
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   const createPhoto = async (url: string) => {
     let transcript = 'Mock transcript';
