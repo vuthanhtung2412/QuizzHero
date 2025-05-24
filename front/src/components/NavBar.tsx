@@ -32,7 +32,7 @@ export function NavBar() {
             <SheetTitle className="text-left">Navigation Menu</SheetTitle>
             <nav className="flex flex-col space-y-6 pt-6">
               <Link href="/" className="text-lg">Quiz</Link>
-              <Link href="/galery" className="text-lg">Galery</Link>
+              {/* <Link href="/galery" className="text-lg">Galery</Link> */}
             </nav>
           </SheetContent>
         </Sheet>

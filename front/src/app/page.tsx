@@ -70,9 +70,6 @@ export default function FrontCameraCapture() {
     }
   };
 
-  const takeQuiz = () => {
-    console.log("Lets quiz")
-  }
 
 
   // Check if camera API is supported and start camera automatically
@@ -135,9 +132,10 @@ export default function FrontCameraCapture() {
               </Button>
             </>
           )}
+          {/* {true && ( */}
           {photos.length > 0 && (
             <>
-              <QuizDialog onClick={takeQuiz} />
+              <QuizDialog />
             </>
           )}
         </div>
