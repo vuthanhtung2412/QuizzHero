@@ -1,4 +1,4 @@
-mistralai==0.4.2
+mistralai==1.7.1
 python-dotenv
 requests
 fastapi
