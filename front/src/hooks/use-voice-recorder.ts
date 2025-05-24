@@ -8,6 +8,7 @@ export interface AudioRecording {
   url: string
   duration: number
   timestamp: Date
+  transcript?: string
 }
 
 export function useVoiceRecorder() {
@@ -108,13 +109,70 @@ export function useVoiceRecorder() {
     setIsRecording(true)
   }, [isRecording, requestMicrophonePermission])
 
-  const stopRecording = useCallback(() => {
+  const stopRecording = useCallback(async () => {
     if (!isRecording || !mediaRecorderRef.current) return
 
-    mediaRecorderRef.current.stop()
-    setIsRecording(false)
-  }, [isRecording])
+    return new Promise<void>((resolve) => {
+      if (!mediaRecorderRef.current) return resolve();
 
+      mediaRecorderRef.current.onstop = async () => {
+        const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const duration = Date.now() - recordingStartTimeRef.current;
+
+        const newRecording: AudioRecording = {
+          id: Date.now().toString(),
+          blob: audioBlob,
+          url: audioUrl,
+          duration,
+          timestamp: new Date(),
+        };
+
+        // Convert blob to base64
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const base64Data = Buffer.from(arrayBuffer).toString('base64');
+
+        // Send to API immediately with the new recording
+        const response = await fetch(`/api/session/${sessionId}/answer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            mimeType: audioBlob.type,
+            data: base64Data
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          console.error('API Error:', error);
+          throw new Error(`API error: ${error.detail?.message || 'Unknown error'}`);
+        }
+
+        const data = await response.json();
+        alert(data.transcript);
+
+        // Update state after API call
+        setRecordings((prev) => [...prev, newRecording]);
+
+        // Clean up stream
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
+
+        setIsRecording(false);
+        resolve();
+      };
+
+      mediaRecorderRef.current.stop();
+    });
+  }, [isRecording, sessionId]);
+
+  // TODO: get the transcript of the recording
+  // then send it the backend and play the audio return from the backend
   const toggleRecording = useCallback(() => {
     if (isRecording) {
       stopRecording()

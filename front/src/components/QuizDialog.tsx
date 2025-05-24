@@ -10,9 +10,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Card, CardContent } from "@/components/ui/card"
-import { Mic, Play, Pause, Trash2, X, Square, Loader2 } from "lucide-react"
-import { useVoiceRecorder, type AudioRecording } from "@/hooks/use-voice-recorder"
+import { Mic, X, Square, Loader2 } from "lucide-react"
+import { useVoiceRecorder } from "@/hooks/use-voice-recorder"
 
 export function QuizDialog(
   // TODO: property to access the list of images
@@ -21,7 +20,6 @@ export function QuizDialog(
   }
 ) {
   const [open, setOpen] = useState(false)
-  const [playingId, setPlayingId] = useState<string | null>(null)
 
   const {
     isRecording,
@@ -30,12 +28,10 @@ export function QuizDialog(
     isLoading,
     sessionId,
     toggleRecording,
-    deleteRecording,
     cleanup,
     init
   } = useVoiceRecorder()
 
-  // Handle dialog open/close
   // TODO: send the images to the backend
   const handleOpenChange = useCallback(async (isOpen: boolean) => {
     setOpen(isOpen)
@@ -50,70 +46,6 @@ export function QuizDialog(
       cleanup()
     }
   }, [cleanup])
-
-  const playRecording = useCallback(
-    async (recording: AudioRecording) => {
-      if (playingId === recording.id) {
-        setPlayingId(null)
-        return
-      }
-
-      try {
-        const audio = new Audio(recording.url)
-
-        // Wait for audio to be loaded before playing
-        await new Promise((resolve, reject) => {
-          audio.oncanplaythrough = resolve
-          audio.onerror = reject
-          audio.load()
-        })
-
-        setPlayingId(recording.id)
-
-        audio.onended = () => {
-          setPlayingId(null)
-        }
-
-        audio.onerror = (e) => {
-          console.error('Audio playback error:', e)
-          setPlayingId(null)
-        }
-
-        const playPromise = audio.play()
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.error('Playback failed:', error)
-            setPlayingId(null)
-          })
-        }
-      } catch (error) {
-        console.error('Error setting up audio:', error)
-        setPlayingId(null)
-      }
-    },
-    [playingId],
-  )
-
-  const handleDeleteRecording = useCallback(
-    (id: string) => {
-      deleteRecording(id)
-      if (playingId === id) {
-        setPlayingId(null)
-      }
-    },
-    [deleteRecording, playingId],
-  )
-
-  const formatDuration = (ms: number) => {
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
-  }
-
-  const formatTimestamp = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
