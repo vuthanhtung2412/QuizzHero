@@ -1,0 +1,6 @@
+mistralai==0.4.2
+python-dotenv
+requests
+fastapi
+uvicorn[standard]
+pydantic
