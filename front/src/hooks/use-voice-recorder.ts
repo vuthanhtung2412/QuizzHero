@@ -1,6 +1,5 @@
 "use client"
 
-import { BACKEND_URL } from "@/const"
 import { useState, useRef, useCallback } from "react"
 
 export interface AudioRecording {

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -156,37 +155,16 @@ export function QuizDialog(
             {isLoading
               ? "Setting up microphone..."
               : isRecording
-                ? "Recording... Click to stop"
-                : "Click to start recording"
+                ? "Recording answer... Click to stop"
+                : "Click to answer"
             }
           </div>
         </div>
 
-        {recordings.length > 0 && (
-          <div className="space-y-2 max-h-40 overflow-y-auto">
-            <h4 className="text-sm font-medium">Recordings ({recordings.length})</h4>
-            {recordings.map((recording) => (
-              <Card key={recording.id}>
-                <CardContent className="p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Button size="sm" variant="ghost" onClick={() => playRecording(recording)}>
-                        {playingId === recording.id ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                      </Button>
-                      <div className="text-xs text-muted-foreground">
-                        <div>{formatDuration(recording.duration)}</div>
-                        <div>{formatTimestamp(recording.timestamp)}</div>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="ghost" onClick={() => handleDeleteRecording(recording.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        {/* to be removed */}
+        <div>
+          {recordings.length}
+        </div>
 
         <DialogFooter>
           <Button variant="outline" className="mx-auto" onClick={() => setOpen(false)}>
