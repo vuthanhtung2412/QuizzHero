@@ -161,67 +161,6 @@ def post_session_answer(request: SessionAnswerRequest, response_model=SessionAns
     session = sessions[id]
     return SessionQuestionResponse(question=session.generate_feedback(request.user_answer))
 
-
-
-# @app.post("/post_session_answer", response_model=QuizResponse)
-# def post_session_answer(request: QuizRequest):
-#     """
-#     Generate a quiz from the provided text content
-
-#     Args:
-#         request: QuizRequest containing text and number of questions
-
-#     Returns:
-#         QuizResponse with generated questions and answers
-#     """
-#     if not quiz_generator:
-#         raise HTTPException(
-#             status_code=500,
-#             detail="Quiz generator not available. Please check MISTRAL_API_KEY configuration."
-#         )
-
-#     if not request.text.strip():
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Text content cannot be empty"
-#         )
-
-#     if request.num_questions < 1 or request.num_questions > 20:
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Number of questions must be between 1 and 20"
-#         )
-
-#     try:
-#         # Generate quiz using the quiz generator
-#         qa_pairs = quiz_generator.generate_quiz(request.text, request.num_questions)
-
-#         if not qa_pairs:
-#             raise HTTPException(
-#                 status_code=500,
-#                 detail="Failed to generate quiz questions. Please try again."
-#             )
-
-#         # Format the response
-#         questions = []
-#         for i, (question, answer) in enumerate(qa_pairs, 1):
-#             questions.append({
-#                 "id": str(i),
-#                 "question": question,
-#                 "answer": answer
-#             })
-
-#         return QuizResponse(
-#             questions=questions,
-#             total_questions=len(questions)
-#         )
-
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=500,
-#             detail=f"Error generating quiz: {str(e)}"
-#         )
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
