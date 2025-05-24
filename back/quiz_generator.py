@@ -59,7 +59,7 @@ class QuizGenerator:
         
         return chat_response.choices[0].message.content
 
-    def generate_quiz(self, markdown_text: str, num_questions: int = 10) -> List[Tuple[str, str]]:
+    def generate_questions(self, markdown_text: str, num_questions: int = 10) -> List[Tuple[str, str]]:
         """
         Generate questions and answers from markdown text using Mistral AI.
 
@@ -104,11 +104,11 @@ class QuizGenerator:
 
         return questions_list[:num_questions],answers_list[:num_questions]
 
-def main(input_text):
-    api_key = os.environ["MISTRAL_API_KEY"]
-    generator = QuizGenerator(api_key)
+api_key = os.environ["MISTRAL_API_KEY"]
+generator = QuizGenerator(api_key)
 
-    questions,answers = generator.generate_quiz(input_text)
+def main(input_text):
+    questions,answers = generator.generate_questions(input_text)
 
     print(questions)
     print(answers)

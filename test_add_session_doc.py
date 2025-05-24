@@ -42,7 +42,7 @@ def test_add_session_doc():
     print("3. Adding documents to session...")
 
     doc_payload = {
-        "base64Docs": test_docs
+        "base64_docs": test_docs
     }
 
     doc_response = requests.post(
@@ -77,7 +77,7 @@ def test_add_session_doc():
 
     # Test with empty documents
     print("   Testing with empty documents...")
-    empty_payload = {"base64Docs": []}
+    empty_payload = {"base64_docs": []}
     empty_response = requests.post(
         f"{BASE_URL}/session/{session_id}/doc",
         json=empty_payload,
@@ -91,7 +91,7 @@ def test_add_session_doc():
 
     # Test with invalid base64
     print("   Testing with invalid base64...")
-    invalid_payload = {"base64Docs": ["invalid_base64_data!!!"]}
+    invalid_payload = {"base64_docs": ["invalid_base64_data!!!"]}
     invalid_response = requests.post(
         f"{BASE_URL}/session/{session_id}/doc",
         json=invalid_payload,
