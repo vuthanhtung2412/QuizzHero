@@ -6,6 +6,9 @@ class Session(object):
     id: int
     base64Docs: list[str]
     decodedDocs: list[str]
+    questions_answers: list[tuple[str, str]]
+    feedbacks: list[str]
+    questions_to_ask: list[str]
 
     def __init__(self):
         self.id = random.randint(0, 1000000000)
