@@ -67,7 +67,7 @@ def session():
     """
     Creates a new session for the user, answers with the id
     """
-    new_session = Session()
+    new_session = Session(quiz_generator)
     sessions[new_session.id] = new_session
     return SessionResponse(session_id=new_session.id)
 

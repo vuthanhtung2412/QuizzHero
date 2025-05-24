@@ -25,7 +25,7 @@ class Session(object):
     answers_with_feedbacks: list[AnsweredQuestion]
 
     def __init__(self, generator: QuizGenerator):
-        self.generator = QuizGenerator
+        self.generator = generator
         self.id = random.randint(0, 1000000000)
         self.base64_docs = []
         self.decoded_docs = []
