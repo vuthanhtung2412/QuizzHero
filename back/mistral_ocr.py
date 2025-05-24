@@ -39,5 +39,7 @@ def process_image_to_text(image_path: str) -> str:
         for page in ocr_response.pages:
             if hasattr(page, 'markdown'):
                 extracted_text += page.markdown + "\n"
+    
+    return extracted_text.strip()
 
 # process_image_to_text("../test-assets/page1.webp")
