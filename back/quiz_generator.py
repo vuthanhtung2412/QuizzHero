@@ -63,7 +63,7 @@ class QuizGenerator:
                                     previous_questions: List[str],
                                     previous_answers: List[str],
                                     previous_feedback: List[str],
-                                    num_follow_ups: int = 3) -> List[str]:
+                                    num_follow_ups: int = 3) -> Tuple[List[str], List[str]]:
         """
         Generate follow-up questions based on previous answers and user profile.
 
@@ -75,7 +75,7 @@ class QuizGenerator:
             num_follow_ups (int): Number of follow-up questions to generate
 
         Returns:
-            List[str]: List of follow-up questions
+            Tuple[List[str], List[str]]: List of follow-up questions and their answers
         """
         # Create context from previous Q&A and feedback
         qa_context = "\n".join([
@@ -99,39 +99,30 @@ class QuizGenerator:
         3. Help clarify concepts that were not fully understood
         4. Are more specific and targeted based on the feedback
 
-        Format each question as a numbered list:
-        1. Question: [question text]
-        2. Question: [question text]
-        3. Question: [question text]"""
+        Format the output as a list of strings representing question and answer pair:
+        {{
+            question: [question1, question2, question3, ...]
+            answers: [answer1, answer2, answer3, ...]
+        }}"""
 
         messages = [
             {"role": "system", "content": "You are an educational AI that generates targeted follow-up questions based on previous answers and feedback."},
             {"role": "user", "content": prompt}
         ]
 
-        chat_response = self.client.chat.complete(
+        chat_response = self.client.chat.parse(
             model="mistral-large-latest",
             messages=messages,
+            response_format=QuestionsAnswers,
             temperature=0.7,
             max_tokens=1000
         )
 
-        response_text = chat_response.choices[0].message.content
-        print(response_text)
+        parsed_response = chat_response.choices[0].message.parsed
+        questions_list = parsed_response.questions
+        answers_list = parsed_response.answers
 
-        # Parse the response and create list of questions
-        follow_ups = []
-        for line in response_text.split("\n"):
-            line = line.strip()
-            # Handle both formats: "1. Question: ..." and "Question: ..."
-            if "Question:" in line:
-                question = line.split("Question:", 1)[1].strip()
-                # Remove any leading numbers and dots
-                question = question.lstrip("123456789. ")
-                if question:
-                    follow_ups.append(question)
-
-        return follow_ups
+        return questions_list[:num_follow_ups], answers_list[:num_follow_ups]
 
     def generate_report(self, questions: List[str], answers: List[str], feedback: List[str]) -> str:        
         """
