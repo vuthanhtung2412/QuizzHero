@@ -1,16 +1,11 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { BACKEND_URL } from "@/const"
-import dotenv from 'dotenv';
-import path from 'path';
-import { ElevenLabsClient, stream as streamEleven } from "@elevenlabs/elevenlabs-js";
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import * as stream from "stream";
 
-// Load environment variables from .env file in the root directory
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+export const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 
 export const VOICES_IDS = {
   oxley: {

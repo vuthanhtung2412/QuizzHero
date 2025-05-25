@@ -1,27 +1,33 @@
 import { NextResponse } from 'next/server'
 import { BACKEND_URL } from '@/const'
+import { textToSpeech } from '@/lib/utils'
 
 export async function POST() {
   try {
-    const response = await fetch(`${BACKEND_URL}/session`, {
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
+    // Convert text to audio stream
+    // TODO:
+    const audioStream = await textToSpeech("Question go here");
     
-    if (!data?.session_id) {
-      throw new Error('Could not create session');
+    // Convert stream to chunks
+    const chunks: Buffer[] = [];
+    for await (const chunk of audioStream) {
+      chunks.push(Buffer.from(chunk));
     }
-
-    return NextResponse.json({ session_id: data.session_id });
+    
+    // Combine chunks into a single buffer
+    const audioBuffer = Buffer.concat(chunks);
+    
+    // Return as streaming response
+    return new Response(audioBuffer, {
+      headers: {
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': audioBuffer.length.toString(),
+      },
+    });
   } catch (error) {
-    console.error('Error creating session:', error);
+    console.error('Error creating audio:', error);
     return NextResponse.json(
-      { error: 'Failed to create session' },
+      { error: 'Failed to create audio' },
       { status: 500 }
     );
   }
