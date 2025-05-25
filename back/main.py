@@ -132,7 +132,7 @@ def add_session_doc(id: int, request: SessionDocRequest, response_model=SessionD
 class SessionQuestionResponse(BaseModel):
     question: str
 @app.get("/session/{id}/question", response_model=SessionQuestionResponse)
-def get_session_question():
+def get_session_question(id: int):
     """
     get next question for the quizz
     """
@@ -149,7 +149,7 @@ class SessionAnswerRequest(BaseModel):
 class SessionAnswerResponse(BaseModel):
     response: str
 @app.post("/session/{id}/answer", response_model=SessionAnswerResponse)
-def post_session_answer(request: SessionAnswerRequest, response_model=SessionAnswerResponse):
+def post_session_answer(id: int, request: SessionAnswerRequest):
     """
     answer to the first question from the quizz
     """
@@ -159,7 +159,7 @@ def post_session_answer(request: SessionAnswerRequest, response_model=SessionAns
             detail=f"Session with id {id} not found"
         )
     session = sessions[id]
-    return SessionQuestionResponse(question=session.generate_feedback(request.user_answer))
+    return SessionAnswerResponse(response=session.generate_feedback(request.user_answer))
 
 if __name__ == "__main__":
     import uvicorn

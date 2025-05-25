@@ -86,7 +86,7 @@ export default function FrontCameraCapture() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          Take photo of your note
+          Take pictures of your lesson notes
         </h1>
 
         {/* Video element */}

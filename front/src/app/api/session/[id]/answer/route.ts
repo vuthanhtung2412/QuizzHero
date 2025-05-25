@@ -4,10 +4,11 @@ import { NextResponse } from "next/server"
 // https://nextjs.org/docs/app/building-your-application/routing/route-handlers
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = params.id;
+    const { id } = await params;
+    const sessionId = id;
     const body = await request.json();
 
     if (!body.data || !body.mimeType) {
@@ -40,7 +41,7 @@ export async function POST(
     } catch (error) {
       console.error('Audio processing error:', error);
       return NextResponse.json(
-        { 
+        {
           detail: {
             status: 'invalid_content',
             message: 'File blob is corrupted or invalid. Please ensure it is playable audio.',
@@ -57,4 +58,4 @@ export async function POST(
       { status: 500 }
     );
   }
-} 
+}
