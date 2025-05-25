@@ -432,8 +432,8 @@ export function QuizDialog(
                 </Button>
               </div>
             ) : (
-              // Show three buttons when feedback is available and still have regular questions
-              <div className="flex justify-between w-full gap-2">
+              // Show only next question and close buttons for questions 1-7
+              <div className="flex justify-between w-full gap-4">
                 <Button
                   variant="outline"
                   className="flex-1 flex items-center justify-center"
@@ -441,14 +441,6 @@ export function QuizDialog(
                 >
                   <X className="w-4 h-4 mr-2" />
                   Close
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="flex-1 flex items-center justify-center"
-                  onClick={handleFollowUpQuestion}
-                >
-                  <MessageCircleQuestion className="w-4 h-4 mr-2" />
-                  Follow-up
                 </Button>
                 <Button
                   className="flex-1 flex items-center justify-center"
