@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog"
-import { Mic, X, Square, Loader2, ArrowRight,Volume2 } from "lucide-react"
+import { Mic, X, Square, Loader2, ArrowRight, Volume2 } from "lucide-react"
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder"
 
 export function QuizDialog(
@@ -376,23 +376,36 @@ export function QuizDialog(
 
 
         <DialogFooter>
-          <div className="flex justify-between w-full gap-4">
+          {aiFeedback ? (
+            // Show both buttons when feedback is available
+            <div className="flex justify-between w-full gap-4">
+              <Button
+                variant="outline"
+                className="flex-1 flex items-center justify-center"
+                onClick={() => setOpen(false)}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Close
+              </Button>
+              <Button
+                className="flex-1 flex items-center justify-center"
+                onClick={handleNextQuestion}
+              >
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Next Question
+              </Button>
+            </div>
+          ) : (
+            // Show only close button when no feedback yet
             <Button
               variant="outline"
-              className="flex-1 flex items-center justify-center"
+              className="mx-auto"
               onClick={() => setOpen(false)}
             >
               <X className="w-4 h-4 mr-2" />
               Close
             </Button>
-            <Button
-              className="flex-1 flex items-center justify-center"
-              onClick={handleNextQuestion}
-            >
-              <ArrowRight className="w-4 h-4 mr-2" />
-              Next Question
-            </Button>
-          </div>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
