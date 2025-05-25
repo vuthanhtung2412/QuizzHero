@@ -58,6 +58,81 @@ class QuizGenerator:
         )
         
         return chat_response.choices[0].message.content
+    
+    def generate_follow_up_questions(self, 
+                                    markdown_text: str, 
+                                    previous_questions: List[str],
+                                    previous_answers: List[str],
+                                    previous_feedback: List[str],
+                                    num_follow_ups: int = 3) -> List[str]:
+        """
+        Generate follow-up questions based on previous answers and user profile.
+
+        Args:
+            markdown_text (str): The original text
+            previous_questions (List[str]): List of previously asked questions
+            previous_answers (List[str]): List of user's answers to previous questions
+            previous_feedback (List[str]): List of feedback given for previous answers
+            num_follow_ups (int): Number of follow-up questions to generate
+
+        Returns:
+            List[str]: List of follow-up questions
+        """
+        # Create context from previous Q&A and feedback
+        qa_context = "\n".join([
+            f"Q: {q}\nA: {a}\nFeedback: {f}" 
+            for q, a, f in zip(previous_questions, previous_answers, previous_feedback)
+        ])
+
+        prompt = f"""Based on the following context, previous questions/answers, and feedback, generate {num_follow_ups} follow-up questions.
+        The questions should address the specific areas where the user needs improvement based on the feedback.
+        Focus on generating questions that will help the user better understand the concepts they struggled with.
+
+        Original text:
+        {markdown_text}
+
+        Previous Q&A and Feedback:
+        {qa_context}
+
+        Generate follow-up questions that:
+        1. Address specific misconceptions or gaps identified in the feedback
+        2. Build upon the user's previous answers and the feedback given
+        3. Help clarify concepts that were not fully understood
+        4. Are more specific and targeted based on the feedback
+
+        Format each question as a numbered list:
+        1. Question: [question text]
+        2. Question: [question text]
+        3. Question: [question text]"""
+
+        messages = [
+            {"role": "system", "content": "You are an educational AI that generates targeted follow-up questions based on previous answers and feedback."},
+            {"role": "user", "content": prompt}
+        ]
+
+        chat_response = self.client.chat.complete(
+            model="mistral-large-latest",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1000
+        )
+
+        response_text = chat_response.choices[0].message.content
+        print(response_text)
+
+        # Parse the response and create list of questions
+        follow_ups = []
+        for line in response_text.split("\n"):
+            line = line.strip()
+            # Handle both formats: "1. Question: ..." and "Question: ..."
+            if "Question:" in line:
+                question = line.split("Question:", 1)[1].strip()
+                # Remove any leading numbers and dots
+                question = question.lstrip("123456789. ")
+                if question:
+                    follow_ups.append(question)
+
+        return follow_ups
 
     def generate_questions(self, markdown_text: str, num_questions: int = 10) -> List[Tuple[str, str]]:
         """
