@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
-import { ElevenLabsClient, play, stream as streamEleven } from "@elevenlabs/elevenlabs-js";
+import { ElevenLabsClient, stream as streamEleven } from "@elevenlabs/elevenlabs-js";
 import { VOICES_IDS } from './voices';
 import * as stream from "stream";
 
@@ -52,8 +52,6 @@ async function testTextToSpeech() {
     const text = "With a soft and whispery American accent, I'm the ideal choice for creating ASMR content, meditative guides, or adding an intimate feel to your narrative projects."
     const speechStream = await textToSpeech(text)
     streamEleven(speechStream)
-    play(speech)
-
 }
 
 testSpeechToText().catch(console.error);

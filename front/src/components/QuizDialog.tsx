@@ -19,8 +19,6 @@ export function QuizDialog(
   }
 ) {
   const [open, setOpen] = useState(false)
-  const [currentQuestion, setCurrentQuestion] = useState<string | null>(null)
-  const [questionError, setQuestionError] = useState<string | null>(null)
 
   const {
     isRecording,
@@ -44,13 +42,8 @@ export function QuizDialog(
   // Upload photos when sessionId becomes available and dialog is open
   useEffect(() => {
     if (open && sessionId && props.photosBase64Url && props.photosBase64Url.length > 0) {
-      const uploadPhotosAndGetQuestion = async () => {
+      const uploadPhotos = async () => {
         try {
-          // Reset states
-          setCurrentQuestion(null);
-          setQuestionError(null);
-
-          // Upload photos
           const photos = props.photosBase64Url!.map(base64Url => ({ base64Url }));
           const response = await fetch(`/api/session/${sessionId}/photos`, {
             method: 'POST',
@@ -62,27 +55,14 @@ export function QuizDialog(
 
           if (response.ok) {
             console.log('Photos uploaded successfully:', data.message);
-
-            // Fetch the first question after successful photo upload
-            const questionResponse = await fetch(`/api/session/${sessionId}/question`);
-
-            if (questionResponse.ok) {
-              const questionData = await questionResponse.json();
-              setCurrentQuestion(questionData.question);
-              console.log("Here is the obtained question", questionData.question)
-            } else {
-              setQuestionError('Failed to load question');
-            }
           } else {
             console.error('Failed to upload photos:', data.error);
-            setQuestionError('Failed to upload photos');
           }
         } catch (error) {
           console.error('Error uploading photos:', error);
-          setQuestionError('Failed to load question');
         }
       }
-      uploadPhotosAndGetQuestion()
+      uploadPhotos()
     }
   }, [open, sessionId, props.photosBase64Url])
 
@@ -105,21 +85,6 @@ export function QuizDialog(
         <DialogHeader>
           <DialogTitle> {`Quiz session ${sessionId}`} </DialogTitle>
         </DialogHeader>
-
-        {/* Question Display Section */}
-        {currentQuestion && (
-          <div className="bg-blue-50 p-4 rounded-lg mb-4">
-            <p className="text-sm font-medium text-blue-900 mb-2">Question:</p>
-            <p className="text-base text-blue-800">{currentQuestion}</p>
-          </div>
-        )}
-
-        {/* Error state */}
-        {questionError && (
-          <div className="bg-red-50 p-4 rounded-lg mb-4">
-            <p className="text-sm text-red-600">{questionError}</p>
-          </div>
-        )}
 
         <div className="flex flex-col items-center space-y-6 py-4">
           {hasPermission === false && (
@@ -154,6 +119,10 @@ export function QuizDialog(
           </div>
         </div>
 
+        {/* to be removed */}
+        <div>
+          {recordings.length}
+        </div>
 
         <DialogFooter>
           <Button variant="outline" className="mx-auto" onClick={() => setOpen(false)}>

@@ -108,8 +108,8 @@ Page {i+1}:
 {doc}
 
 """
-        questions_list, answers_list = self.generator.generate_questions(self.concatenated_docs, 5)
-        for question, answer in zip(questions_list, answers_list):
+        questions_answers = self.generator.generate_questions(self.concatenated_docs, 5)
+        for question, answer in questions_answers:
             typedQuestion: Question = {
                 "question": question,
                 "right_answer": answer
