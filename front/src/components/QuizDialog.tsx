@@ -23,6 +23,8 @@ export function QuizDialog(
   const [questionError, setQuestionError] = useState<string | null>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isPlayingFeedback, setIsPlayingFeedback] = useState(false);
+  const [isLoadingQuestion, setIsLoadingQuestion] = useState(false);
+  const [isQuestionReady, setIsQuestionReady] = useState(false);
   const [userTranscript, setUserTranscript] = useState<string | null>(null)
   const [aiFeedback, setAiFeedback] = useState<string | null>(null)
   const [isProcessingAnswer, setIsProcessingAnswer] = useState(false)
@@ -108,9 +110,11 @@ export function QuizDialog(
     if (open && sessionId && props.photosBase64Url && props.photosBase64Url.length > 0) {
       const uploadPhotosAndGetQuestion = async () => {
         try {
-          // Reset states
+          // Reset states and start loading
           setCurrentQuestion(null);
           setQuestionError(null);
+          setIsLoadingQuestion(true);
+          setIsQuestionReady(false);
 
           // Upload photos
           const photos = props.photosBase64Url!.map(base64Url => ({ base64Url }));
@@ -131,18 +135,25 @@ export function QuizDialog(
             if (questionResponse.ok) {
               const questionData = await questionResponse.json();
               setCurrentQuestion(questionData.question);
+              setIsLoadingQuestion(false);
               console.log("Here is the obtained question", questionData.question)
-              playAudio(questionData.question)
+
+              // Play audio and mark as ready when audio finishes
+              await playAudio(questionData.question);
+              setIsQuestionReady(true);
             } else {
               setQuestionError('Failed to load question');
+              setIsLoadingQuestion(false);
             }
           } else {
             console.error('Failed to upload photos:', data.error);
             setQuestionError('Failed to upload photos');
+            setIsLoadingQuestion(false);
           }
         } catch (error) {
           console.error('Error uploading photos:', error);
           setQuestionError('Failed to load question');
+          setIsLoadingQuestion(false);
         }
       }
       uploadPhotosAndGetQuestion()
@@ -206,10 +217,26 @@ export function QuizDialog(
           <DialogTitle> {`Quiz session ${sessionId}`} </DialogTitle>
         </DialogHeader>
 
+        {/* Question Loading State */}
+        {isLoadingQuestion && (
+          <div className="bg-blue-50 p-4 rounded-lg mb-4 flex items-center">
+            <Loader2 className="w-4 h-4 animate-spin mr-2 text-blue-600" />
+            <p className="text-sm text-blue-800">Loading question...</p>
+          </div>
+        )}
+
         {/* Question Display Section */}
-        {currentQuestion && (
+        {currentQuestion && !isLoadingQuestion && (
           <div className="bg-blue-50 p-4 rounded-lg mb-4">
-            <p className="text-sm font-medium text-blue-900 mb-2">Question:</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-blue-900">Question:</p>
+              {isPlayingAudio && (
+                <div className="flex items-center">
+                  <Volume2 className="w-4 h-4 text-blue-600 mr-1" />
+                  <span className="text-xs text-blue-600">Preparing audio...</span>
+                </div>
+              )}
+            </div>
             <p className="text-base text-blue-800">{currentQuestion}</p>
           </div>
         )}
@@ -233,7 +260,7 @@ export function QuizDialog(
         {isProcessingAnswer && (
           <div className="bg-yellow-50 p-4 rounded-lg mb-4 flex items-center">
             <Loader2 className="w-4 h-4 animate-spin mr-2 text-yellow-600" />
-            <p className="text-sm text-yellow-800">Processing your answer and generating feedback...</p>
+            <p className="text-sm text-yellow-800">Processing answer...</p>
           </div>
         )}
 
@@ -245,7 +272,7 @@ export function QuizDialog(
               {isPlayingFeedback && (
                 <div className="flex items-center">
                   <Volume2 className="w-4 h-4 text-purple-600 mr-1" />
-                  <span className="text-xs text-purple-600">Playing...</span>
+                  <span className="text-xs text-purple-600">Loading feedback audio...</span>
                 </div>
               )}
             </div>
@@ -264,30 +291,50 @@ export function QuizDialog(
           setIsPlayingFeedback(false);
         }} />
 
-          <Button
-            size="lg"
-            variant={isRecording ? "destructive" : "default"}
-            className="w-20 h-20 rounded-full"
-            onClick={toggleRecording}
-            disabled={hasPermission === false || isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="w-8 h-8 animate-spin" />
-            ) : isRecording ? (
-              <Square className="w-8 h-8" />
-            ) : (
-              <Mic className="w-8 h-8" />
-            )}
-          </Button>
+          {/* Show loading state when question is not ready */}
+          {(isLoadingQuestion || isPlayingAudio || !isQuestionReady) && !questionError ? (
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              </div>
+              <div className="text-sm text-muted-foreground text-center">
+                {isLoadingQuestion
+                  ? "Loading question..."
+                  : isPlayingAudio
+                    ? "Preparing audio..."
+                    : "Getting ready..."
+                }
+              </div>
+            </div>
+          ) : (
+            /* Show record button when question is ready */
+            <>
+              <Button
+                size="lg"
+                variant={isRecording ? "destructive" : "default"}
+                className="w-20 h-20 rounded-full"
+                onClick={toggleRecording}
+                disabled={hasPermission === false || isLoading || !isQuestionReady}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                ) : isRecording ? (
+                  <Square className="w-8 h-8" />
+                ) : (
+                  <Mic className="w-8 h-8" />
+                )}
+              </Button>
 
-          <div className="text-sm text-muted-foreground text-center">
-            {isLoading
-              ? "Setting up microphone..."
-              : isRecording
-                ? "Recording answer... Click to stop"
-                : "Click to answer"
-            }
-          </div>
+              <div className="text-sm text-muted-foreground text-center">
+                {isLoading
+                  ? "Setting up microphone..."
+                  : isRecording
+                    ? "Recording answer... Click to stop"
+                    : "Click to answer"
+                }
+              </div>
+            </>
+          )}
         </div>
 
 
