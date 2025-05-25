@@ -18,9 +18,13 @@ export async function GET(
       throw new Error(errorData.detail || 'Failed to get question from backend');
     }
 
-    const data = await response.json();
+    const { question, total, current } = await response.json();
 
-    return NextResponse.json({ question: data.question });
+    return NextResponse.json({ 
+      question,
+      total,
+      current
+     });
   } catch (error) {
     console.error('Error getting session question:', error);
     return NextResponse.json(

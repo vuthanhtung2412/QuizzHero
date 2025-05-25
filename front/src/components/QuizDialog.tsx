@@ -19,6 +19,8 @@ export function QuizDialog(
   }
 ) {
   const [open, setOpen] = useState(false)
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState<number | null>(null)
+  const [totalQuestions, setTotalQuestions] = useState<number | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null)
   const [questionError, setQuestionError] = useState<string | null>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -137,6 +139,8 @@ export function QuizDialog(
             if (questionResponse.ok) {
               const questionData = await questionResponse.json();
               setCurrentQuestion(questionData.question);
+              setCurrentQuestionNumber(questionData.current);
+              setTotalQuestions(questionData.total);
               setIsLoadingQuestion(false);
               console.log("Here is the obtained question", questionData.question)
 
@@ -212,6 +216,8 @@ export function QuizDialog(
       if (questionResponse.ok) {
         const questionData = await questionResponse.json();
         setCurrentQuestion(questionData.question);
+        setCurrentQuestionNumber(questionData.current);
+        setTotalQuestions(questionData.total);
         setIsLoadingQuestion(false);
 
         // Play audio and mark as ready when audio finishes
@@ -238,7 +244,9 @@ export function QuizDialog(
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle> {`Quiz session ${sessionId}`} </DialogTitle>
+          {currentQuestionNumber && totalQuestions && (
+            <DialogTitle> {`Question ${currentQuestionNumber} / ${totalQuestions}`} </DialogTitle>
+          )}
         </DialogHeader>
 
         {/* Scrollable Content Area */}
