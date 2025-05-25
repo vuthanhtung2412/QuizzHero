@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import PhotoGallery from '../components/PhotoGallery';
 import { usePhotos } from '@/hooks/usePhotos';
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import { QuizDialog } from '@/components/QuizDialog';
 import { Loader2, Volume2 } from 'lucide-react';
 
@@ -17,8 +17,6 @@ export default function FrontCameraCapture() {
     createPhoto,
     deletePhoto
   } = usePhotos()
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const startCamera = async () => {
     try {
@@ -73,29 +71,6 @@ export default function FrontCameraCapture() {
     }
   };
 
-  const playAudio = async () => {
-    try {
-      setIsPlayingAudio(true);
-      const response = await fetch('/api/session/1/question', {
-        method: 'POST',
-      });
-
-      if (!response.ok) throw new Error('Failed to get audio');
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      if (audioRef.current) {
-        audioRef.current.src = audioUrl;
-        await audioRef.current.play();
-      }
-    } catch (error) {
-      console.error('Error playing audio:', error);
-    } finally {
-      setIsPlayingAudio(false);
-    }
-  };
-
   // Check if camera API is supported and start camera automatically
   useEffect(() => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -112,9 +87,6 @@ export default function FrontCameraCapture() {
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
           Take pictures of your lesson notes
         </h1>
-
-        {/* Audio element */}
-        <audio ref={audioRef} onEnded={() => setIsPlayingAudio(false)} />
 
         {/* Video element */}
         <div className="relative mb-4">
@@ -159,20 +131,6 @@ export default function FrontCameraCapture() {
               </Button>
             </>
           )}
-          
-          <Button 
-            onClick={playAudio}
-            disabled={isPlayingAudio}
-            variant="outline"
-            className="flex items-center justify-center gap-2"
-          >
-            {isPlayingAudio ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Volume2 className="h-4 w-4" />
-            )}
-            {isPlayingAudio ? 'Playing...' : 'Play Test Audio'}
-          </Button>
 
           {photos.length > 0 && (
             <>

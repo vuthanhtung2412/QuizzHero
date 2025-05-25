@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -21,6 +21,8 @@ export function QuizDialog(
   const [open, setOpen] = useState(false)
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null)
   const [questionError, setQuestionError] = useState<string | null>(null)
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const {
     isRecording,
@@ -40,6 +42,34 @@ export function QuizDialog(
       await init()
     }
   }, [init])
+
+    const playAudio = async (transcript: string) => {
+      try {
+        setIsPlayingAudio(true);
+        const response = await fetch('/api/t2p', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ transcript }),
+        });
+
+        if (!response.ok) throw new Error('Failed to get audio');
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        if (audioRef.current) {
+          audioRef.current.src = audioUrl;
+          await audioRef.current.play();
+        }
+      } catch (error) {
+        console.error('Error playing audio:', error);
+      } finally {
+        setIsPlayingAudio(false);
+      }
+    };
+
 
   // Upload photos when sessionId becomes available and dialog is open
   useEffect(() => {
@@ -70,6 +100,7 @@ export function QuizDialog(
               const questionData = await questionResponse.json();
               setCurrentQuestion(questionData.question);
               console.log("Here is the obtained question", questionData.question)
+              playAudio(questionData.question)
             } else {
               setQuestionError('Failed to load question');
             }
@@ -127,6 +158,7 @@ export function QuizDialog(
               Microphone access denied. Please enable microphone permissions and try again.
             </div>
           )}
+        <audio ref={audioRef} onEnded={() => setIsPlayingAudio(false)} />
 
           <Button
             size="lg"
