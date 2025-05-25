@@ -3,10 +3,11 @@ import { BACKEND_URL } from '@/const'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = params.id;
+    const { id } = await params;
+    const sessionId = id;
 
     // Parse the request body
     const body = await request.json();
