@@ -8,8 +8,8 @@ The AI tries to keep the student motivated to keep going.
 After finishing all the questions, the user will receive a precise summarization / report. The AI will respond e.g. which aspects the student should focus on. 
 
 # Used Tools
-Backend: Python
-Frontend: Typescript
-Voice: Elevenlabs
-AI: Mistral
-API: FastAPI
+- Backend: Python
+- Frontend: Typescript
+- Voice: Elevenlabs
+- AI: Mistral
+- API: FastAPI
