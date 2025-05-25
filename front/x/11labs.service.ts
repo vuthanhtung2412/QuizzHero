@@ -17,11 +17,11 @@ const elevenlabs = new ElevenLabsClient({
 });
 
 export const textToSpeech = async (text: string): Promise<stream.Readable> => {
-    const speech = await elevenlabs.textToSpeech.stream(VOICES_IDS.oxley.id, {
+    const speech = await elevenlabs.textToSpeech.stream(VOICES_IDS.jessica.id, {
         text: text,
         modelId: "eleven_flash_v2_5",
         voiceSettings: {
-            speed: VOICES_IDS.oxley.speed,
+            speed: VOICES_IDS.jessica.speed,
         }
     });
     return speech

@@ -411,8 +411,8 @@ export function QuizDialog(
 
         <DialogFooter>
           {aiFeedback ? (
-            // Check if we've completed all 7 regular questions
-            currentQuestionNumber && currentQuestionNumber >= 7 ? (
+            // Check if we've completed all 4 regular questions
+            currentQuestionNumber && currentQuestionNumber >= 4 ? (
               // Show only follow-up and close buttons after 7 questions
               <div className="flex justify-between w-full gap-4">
                 <Button

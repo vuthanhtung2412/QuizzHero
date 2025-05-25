@@ -83,7 +83,7 @@ class QuizGenerator:
             for q, a, f in zip(previous_questions, previous_answers, previous_feedback)
         ])
 
-        prompt = f"""Based on the following context, previous questions/answers, and feedback, generate {num_follow_ups} follow-up questions.
+        prompt = f"""Based on the following context, previous questions/answers, and feedback, generate {num_follow_ups} follow-up questions and answers.
         The questions should address the specific areas where the user needs improvement based on the feedback.
         Focus on generating questions that will help the user better understand the concepts they struggled with.
 
@@ -93,7 +93,7 @@ class QuizGenerator:
         Previous Q&A and Feedback:
         {qa_context}
 
-        Generate follow-up questions that:
+        Generate follow-up questions and answers that:
         1. Address specific misconceptions or gaps identified in the feedback
         2. Build upon the user's previous answers and the feedback given
         3. Help clarify concepts that were not fully understood
@@ -117,6 +117,7 @@ class QuizGenerator:
             temperature=0.7,
             max_tokens=1000
         )
+        print("chat anwer", chat_response)
 
         parsed_response = chat_response.choices[0].message.parsed
         questions_list = parsed_response.questions
@@ -163,7 +164,7 @@ class QuizGenerator:
 
         return chat_response.choices[0].message.content
 
-    def generate_questions(self, markdown_text: str, num_questions: int = 7) -> List[Tuple[str, str]]:
+    def generate_questions(self, markdown_text: str, num_questions: int = 4) -> List[Tuple[str, str]]:
         """
         Generate questions and answers from markdown text using Mistral AI.
 

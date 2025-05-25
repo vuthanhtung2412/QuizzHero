@@ -1,6 +1,6 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { BACKEND_URL } from "@/const"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { BACKEND_URL } from "@/const";
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import * as stream from "stream";
 
@@ -57,11 +57,11 @@ export const textToSpeech = async (text: string): Promise<stream.Readable> => {
   const elevenlabs = new ElevenLabsClient({
     apiKey: ELEVENLABS_API_KEY,
   });
-  const speech = await elevenlabs.textToSpeech.stream(VOICES_IDS.oxley.id, {
+  const speech = await elevenlabs.textToSpeech.stream(VOICES_IDS.jessica.id, {
     text: text,
     modelId: "eleven_flash_v2_5",
     voiceSettings: {
-      speed: VOICES_IDS.oxley.speed,
+      speed: VOICES_IDS.jessica.speed,
     }
   });
   return speech
