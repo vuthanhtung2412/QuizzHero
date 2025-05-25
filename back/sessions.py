@@ -98,7 +98,7 @@ class Session(object):
 
     def generate_next_question(self) -> str:
         if self.questions_to_ask:
-            return self.questions_to_ask[0]
+            return self.questions_to_ask[0]["question"]
 
         if not self.concatenated_docs:
             self.concatenated_docs = ""

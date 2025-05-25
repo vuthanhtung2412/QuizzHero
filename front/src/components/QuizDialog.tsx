@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog"
-import { Mic, X, Square, Loader2, Volume2 } from "lucide-react"
+import { Mic, X, Square, Loader2, ArrowRight,Volume2 } from "lucide-react"
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder"
 
 export function QuizDialog(
@@ -50,32 +50,32 @@ export function QuizDialog(
     }
   }, [init])
 
-    const playAudio = async (transcript: string) => {
-      try {
-        setIsPlayingAudio(true);
-        const response = await fetch('/api/t2p', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ transcript }),
-        });
+  const playAudio = async (transcript: string) => {
+    try {
+      setIsPlayingAudio(true);
+      const response = await fetch('/api/t2p', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ transcript }),
+      });
 
-        if (!response.ok) throw new Error('Failed to get audio');
+      if (!response.ok) throw new Error('Failed to get audio');
 
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
 
-        if (audioRef.current) {
-          audioRef.current.src = audioUrl;
-          await audioRef.current.play();
-        }
-      } catch (error) {
-        console.error('Error playing audio:', error);
-      } finally {
-        setIsPlayingAudio(false);
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        await audioRef.current.play();
       }
-    };
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    } finally {
+      setIsPlayingAudio(false);
+    }
+  };
 
     const playFeedbackAudio = async (feedbackText: string) => {
       try {
@@ -203,6 +203,17 @@ export function QuizDialog(
       cleanup()
     }
   }, [cleanup])
+  
+  const handleNextQuestion = async () => {
+    const questionResponse = await fetch(`/api/session/${sessionId}/question`);
+    if (questionResponse.ok) {
+      const questionData = await questionResponse.json();
+      setCurrentQuestion(questionData.question);
+      playAudio(questionData.question)
+    } else {
+      setQuestionError('Failed to load question');
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -339,10 +350,23 @@ export function QuizDialog(
 
 
         <DialogFooter>
-          <Button variant="outline" className="mx-auto" onClick={() => setOpen(false)}>
-            <X className="w-4 h-4 mr-2" />
-            Close
-          </Button>
+          <div className="flex justify-between w-full gap-4">
+            <Button
+              variant="outline"
+              className="flex-1 flex items-center justify-center"
+              onClick={() => setOpen(false)}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Close
+            </Button>
+            <Button
+              className="flex-1 flex items-center justify-center"
+              onClick={handleNextQuestion}
+            >
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Next Question
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
