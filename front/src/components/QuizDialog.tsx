@@ -203,7 +203,7 @@ export function QuizDialog(
       cleanup()
     }
   }, [cleanup])
-  
+
   const handleNextQuestion = async () => {
     const questionResponse = await fetch(`/api/session/${sessionId}/question`);
     if (questionResponse.ok) {
@@ -223,75 +223,79 @@ export function QuizDialog(
           Start Quiz
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle> {`Quiz session ${sessionId}`} </DialogTitle>
         </DialogHeader>
 
-        {/* Question Loading State */}
-        {isLoadingQuestion && (
-          <div className="bg-blue-50 p-4 rounded-lg mb-4 flex items-center">
-            <Loader2 className="w-4 h-4 animate-spin mr-2 text-blue-600" />
-            <p className="text-sm text-blue-800">Loading question...</p>
-          </div>
-        )}
-
-        {/* Question Display Section */}
-        {currentQuestion && !isLoadingQuestion && (
-          <div className="bg-blue-50 p-4 rounded-lg mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-blue-900">Question:</p>
-              {isPlayingAudio && (
-                <div className="flex items-center">
-                  <Volume2 className="w-4 h-4 text-blue-600 mr-1" />
-                  <span className="text-xs text-blue-600">Preparing audio...</span>
-                </div>
-              )}
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+          {/* Question Loading State */}
+          {isLoadingQuestion && (
+            <div className="bg-blue-50 p-4 rounded-lg flex items-center">
+              <Loader2 className="w-4 h-4 animate-spin mr-2 text-blue-600" />
+              <p className="text-sm text-blue-800">Loading question...</p>
             </div>
-            <p className="text-base text-blue-800">{currentQuestion}</p>
-          </div>
-        )}
+          )}
 
-        {/* Error state */}
-        {questionError && (
-          <div className="bg-red-50 p-4 rounded-lg mb-4">
-            <p className="text-sm text-red-600">{questionError}</p>
-          </div>
-        )}
-
-        {/* User Transcript Display */}
-        {userTranscript && (
-          <div className="bg-green-50 p-4 rounded-lg mb-4">
-            <p className="text-sm font-medium text-green-900 mb-2">Your Answer:</p>
-            <p className="text-base text-green-800">{userTranscript}</p>
-          </div>
-        )}
-
-        {/* Processing State */}
-        {isProcessingAnswer && (
-          <div className="bg-yellow-50 p-4 rounded-lg mb-4 flex items-center">
-            <Loader2 className="w-4 h-4 animate-spin mr-2 text-yellow-600" />
-            <p className="text-sm text-yellow-800">Processing answer...</p>
-          </div>
-        )}
-
-        {/* AI Feedback Display */}
-        {aiFeedback && (
-          <div className="bg-purple-50 p-4 rounded-lg mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-purple-900">AI Feedback:</p>
-              {isPlayingFeedback && (
-                <div className="flex items-center">
-                  <Volume2 className="w-4 h-4 text-purple-600 mr-1" />
-                  <span className="text-xs text-purple-600">Loading feedback audio...</span>
-                </div>
-              )}
+          {/* Question Display Section */}
+          {currentQuestion && !isLoadingQuestion && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-blue-900">Question:</p>
+                {isPlayingAudio && (
+                  <div className="flex items-center">
+                    <Volume2 className="w-4 h-4 text-blue-600 mr-1" />
+                    <span className="text-xs text-blue-600">Preparing audio...</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-base text-blue-800">{currentQuestion}</p>
             </div>
-            <p className="text-base text-purple-800">{aiFeedback}</p>
-          </div>
-        )}
+          )}
 
-        <div className="flex flex-col items-center space-y-6 py-4">
+          {/* Error state */}
+          {questionError && (
+            <div className="bg-red-50 p-4 rounded-lg">
+              <p className="text-sm text-red-600">{questionError}</p>
+            </div>
+          )}
+
+          {/* User Transcript Display */}
+          {userTranscript && (
+            <div className="bg-green-50 p-4 rounded-lg">
+              <p className="text-sm font-medium text-green-900 mb-2">Your Answer:</p>
+              <p className="text-base text-green-800">{userTranscript}</p>
+            </div>
+          )}
+
+          {/* Processing State */}
+          {isProcessingAnswer && (
+            <div className="bg-yellow-50 p-4 rounded-lg flex items-center">
+              <Loader2 className="w-4 h-4 animate-spin mr-2 text-yellow-600" />
+              <p className="text-sm text-yellow-800">Processing answer...</p>
+            </div>
+          )}
+
+          {/* AI Feedback Display */}
+          {aiFeedback && (
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-purple-900">AI Feedback:</p>
+                {isPlayingFeedback && (
+                  <div className="flex items-center">
+                    <Volume2 className="w-4 h-4 text-purple-600 mr-1" />
+                    <span className="text-xs text-purple-600">Loading feedback audio...</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-base text-purple-800">{aiFeedback}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Fixed Recording Section */}
+        <div className="flex-shrink-0 flex flex-col items-center space-y-6 py-4 border-t">
           {hasPermission === false && (
             <div className="text-sm text-red-500 text-center">
               Microphone access denied. Please enable microphone permissions and try again.
