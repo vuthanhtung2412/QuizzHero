@@ -146,7 +146,15 @@ class QuizGenerator:
             List[Tuple[str, str]]: List of (question, answer) pairs
         """
         # Create a prompt for the AI to generate questions and answers
-        prompt = f"""Based on the following text, generate {num_questions} relevant questions and their answers that test understanding of the content.
+        prompt = f"""Based on the following text, generate {num_questions} clear and concise questions that test understanding of the content.
+        Guidelines for questions:
+        - Be direct and specific
+        - Avoid phrases like "according to the text" or "based on the text"
+        - Focus on key concepts and important details
+        - Make questions self-contained and clear
+        - Use active voice
+        - Avoid redundant information
+
         Format the output as a list of strings representing question and answer pair:
         {{
             question: [question1, question2, question3, ...]

@@ -2,7 +2,6 @@ import os
 import base64
 from mistralai import Mistral
 from dotenv import load_dotenv
-import quiz_generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 load_dotenv()
 
@@ -16,41 +15,36 @@ def process_image_to_text(base64_image: str) -> str:
     Returns:
         str: Extracted text from the image
     """
-    try:
-        api_key = os.environ["MISTRAL_API_KEY"]
-        client = Mistral(api_key=api_key)
+    
+    api_key = os.environ["MISTRAL_API_KEY"]
+    client = Mistral(api_key=api_key)
 
-        # Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
-        if ',' in base64_image:
-            base64_image = base64_image.split(',')[1]
+    # Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
+    if ',' in base64_image:
+        base64_image = base64_image.split(',')[1]
 
-        print("Processing base64 image with Mistral OCR")
+    print("Processing base64 image with Mistral OCR")
 
-        # Use the base64-encoded image in the request
-        ocr_response = client.ocr.process(
-            model="mistral-ocr-latest",
-            document={
-                "type": "image_url",
-                "image_url": f"data:image/jpeg;base64,{base64_image}"
-            },
-            include_image_base64=True
-        )
+    # Use the base64-encoded image in the request
+    ocr_response = client.ocr.process(
+        model="mistral-ocr-latest",
+        document={
+            "type": "image_url",
+            "image_url": f"data:image/jpeg;base64,{base64_image}"
+        },
+        include_image_base64=True
+    )
 
-        # Extract markdown text from the OCR response
-        extracted_text = ""
-        if hasattr(ocr_response, 'pages'):
-            for page in ocr_response.pages:
-                if hasattr(page, 'markdown'):
-                    extracted_text += page.markdown + "\n"
+    # Extract markdown text from the OCR response
+    extracted_text = ""
+    if hasattr(ocr_response, 'pages'):
+        for page in ocr_response.pages:
+            if hasattr(page, 'markdown'):
+                extracted_text += page.markdown + "\n"
 
-        result = extracted_text.strip()
-        print(f"OCR processing completed, extracted {len(result)} characters")
-        return result
-
-    except Exception as e:
-        print(f"Error during OCR processing: {str(e)}")
-        # Return a fallback message instead of crashing
-        return f"[OCR Error: Could not process image - {str(e)}]"
+    result = extracted_text.strip()
+    print(f"OCR processing completed, extracted {len(result)} characters")
+    return result
     
 def process_multiple_images(image_paths: list[str], max_workers: int = 4) -> dict[str, str]:
     """
@@ -80,9 +74,7 @@ def process_multiple_images(image_paths: list[str], max_workers: int = 4) -> dic
             except Exception as e:
                 print(f"Error processing {image_path}: {str(e)}")
                 results[image_path] = ""
-    
     return results 
-
 
 def process_image_file_to_text(image_path: str) -> str:
     """
