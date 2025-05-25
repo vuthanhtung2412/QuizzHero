@@ -244,9 +244,11 @@ export function QuizDialog(
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          {currentQuestionNumber && totalQuestions && (
-            <DialogTitle> {`Question ${currentQuestionNumber} / ${totalQuestions}`} </DialogTitle>
-          )}
+          <DialogTitle>
+            {currentQuestionNumber && totalQuestions 
+              ? `Question ${currentQuestionNumber} / ${totalQuestions}`
+              : "Quiz Time !"}
+          </DialogTitle>
         </DialogHeader>
 
         {/* Scrollable Content Area */}
