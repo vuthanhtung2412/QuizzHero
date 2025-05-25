@@ -9,6 +9,7 @@ export interface AudioRecording {
   duration: number
   timestamp: Date
   transcript?: string
+  feedback?: string
 }
 
 export function useVoiceRecorder() {
@@ -139,7 +140,7 @@ export function useVoiceRecorder() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             mimeType: audioBlob.type,
             data: base64Data
           }),
@@ -152,7 +153,31 @@ export function useVoiceRecorder() {
         }
 
         const data = await response.json();
-        alert(data.transcript);
+        const transcript = data.transcript;
+
+        // Get AI feedback using the transcript
+        try {
+          const feedbackResponse = await fetch(`/api/session/${sessionId}/feedback`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ transcript }),
+          });
+
+          if (feedbackResponse.ok) {
+            const feedbackData = await feedbackResponse.json();
+            // Store both transcript and feedback in the recording
+            newRecording.transcript = transcript;
+            newRecording.feedback = feedbackData.feedback;
+          } else {
+            console.error('Failed to get AI feedback');
+            newRecording.transcript = transcript;
+          }
+        } catch (error) {
+          console.error('Error getting AI feedback:', error);
+          newRecording.transcript = transcript;
+        }
 
         // Update state after API call
         setRecordings((prev) => [...prev, newRecording]);

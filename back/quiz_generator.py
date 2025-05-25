@@ -49,18 +49,18 @@ class QuizGenerator:
             {"role": "user", "content": prompt}
         ]
 
-        
+
         chat_response = self.client.chat.complete(
             model="mistral-large-latest",
             messages=messages,
             temperature=0.7,
             max_tokens=500
         )
-        
+
         return chat_response.choices[0].message.content
-    
-    def generate_follow_up_questions(self, 
-                                    markdown_text: str, 
+
+    def generate_follow_up_questions(self,
+                                    markdown_text: str,
                                     previous_questions: List[str],
                                     previous_answers: List[str],
                                     previous_feedback: List[str],
@@ -80,7 +80,7 @@ class QuizGenerator:
         """
         # Create context from previous Q&A and feedback
         qa_context = "\n".join([
-            f"Q: {q}\nA: {a}\nFeedback: {f}" 
+            f"Q: {q}\nA: {a}\nFeedback: {f}"
             for q, a, f in zip(previous_questions, previous_answers, previous_feedback)
         ])
 
@@ -172,7 +172,7 @@ class QuizGenerator:
             {"role": "user", "content": prompt},
         ]
 
-        
+
         chat_response = self.client.chat.parse(
             model="mistral-large-latest",
             messages=messages,
@@ -184,7 +184,7 @@ class QuizGenerator:
         parsed_response = chat_response.choices[0].message.parsed
         questions_list = parsed_response.questions
         answers_list = parsed_response.answers
-
+        print(f"Generated questions:", questions_list[:num_questions])
         return questions_list[:num_questions],answers_list[:num_questions]
 
 api_key = os.environ["MISTRAL_API_KEY"]

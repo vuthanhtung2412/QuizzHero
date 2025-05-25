@@ -22,6 +22,9 @@ export function QuizDialog(
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null)
   const [questionError, setQuestionError] = useState<string | null>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [userTranscript, setUserTranscript] = useState<string | null>(null)
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null)
+  const [isProcessingAnswer, setIsProcessingAnswer] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const {
@@ -117,6 +120,32 @@ export function QuizDialog(
     }
   }, [open, sessionId, props.photosBase64Url])
 
+  // Monitor recordings for transcript and feedback updates
+  useEffect(() => {
+    if (recordings.length > 0) {
+      const latestRecording = recordings[recordings.length - 1];
+      if (latestRecording.transcript) {
+        setUserTranscript(latestRecording.transcript);
+        setAiFeedback(latestRecording.feedback || null);
+        setIsProcessingAnswer(false);
+      }
+    }
+  }, [recordings])
+
+  // Monitor recording state to show processing indicator
+  useEffect(() => {
+    if (isRecording) {
+      setUserTranscript(null);
+      setAiFeedback(null);
+      setIsProcessingAnswer(false);
+    } else if (!isRecording && recordings.length > 0) {
+      const latestRecording = recordings[recordings.length - 1];
+      if (!latestRecording.transcript) {
+        setIsProcessingAnswer(true);
+      }
+    }
+  }, [isRecording, recordings])
+
   // Cleanup when component unmounts
   useEffect(() => {
     return () => {
@@ -149,6 +178,30 @@ export function QuizDialog(
         {questionError && (
           <div className="bg-red-50 p-4 rounded-lg mb-4">
             <p className="text-sm text-red-600">{questionError}</p>
+          </div>
+        )}
+
+        {/* User Transcript Display */}
+        {userTranscript && (
+          <div className="bg-green-50 p-4 rounded-lg mb-4">
+            <p className="text-sm font-medium text-green-900 mb-2">Your Answer:</p>
+            <p className="text-base text-green-800">{userTranscript}</p>
+          </div>
+        )}
+
+        {/* Processing State */}
+        {isProcessingAnswer && (
+          <div className="bg-yellow-50 p-4 rounded-lg mb-4 flex items-center">
+            <Loader2 className="w-4 h-4 animate-spin mr-2 text-yellow-600" />
+            <p className="text-sm text-yellow-800">Processing your answer and generating feedback...</p>
+          </div>
+        )}
+
+        {/* AI Feedback Display */}
+        {aiFeedback && (
+          <div className="bg-purple-50 p-4 rounded-lg mb-4">
+            <p className="text-sm font-medium text-purple-900 mb-2">AI Feedback:</p>
+            <p className="text-base text-purple-800">{aiFeedback}</p>
           </div>
         )}
 
