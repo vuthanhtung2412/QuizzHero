@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog"
-import { Mic, X, Square, Loader2, ArrowRight, Volume2 } from "lucide-react"
+import { Mic, X, Square, Loader2, ArrowRight, Volume2, MessageCircleQuestion } from "lucide-react"
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder"
 
 export function QuizDialog(
@@ -237,6 +237,36 @@ export function QuizDialog(
     }
   }
 
+  const handleFollowUpQuestion = async () => {
+    try {
+      // Reset previous answer and feedback before loading follow-up question
+      setUserTranscript(null);
+      setAiFeedback(null);
+      setIsProcessingAnswer(false);
+      setIsLoadingQuestion(true);
+      setIsQuestionReady(false);
+      setQuestionError(null);
+
+      const questionResponse = await fetch(`/api/session/${sessionId}/question/followup`);
+      if (questionResponse.ok) {
+        const questionData = await questionResponse.json();
+        setCurrentQuestion(questionData.question);
+        setIsLoadingQuestion(false);
+
+        // Play audio and mark as ready when audio finishes
+        await playAudio(questionData.question);
+        setIsQuestionReady(true);
+      } else {
+        setQuestionError('Failed to load follow-up question');
+        setIsLoadingQuestion(false);
+      }
+    } catch (error) {
+      console.error('Error loading follow-up question:', error);
+      setQuestionError('Failed to load follow-up question');
+      setIsLoadingQuestion(false);
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -377,8 +407,8 @@ export function QuizDialog(
 
         <DialogFooter>
           {aiFeedback ? (
-            // Show both buttons when feedback is available
-            <div className="flex justify-between w-full gap-4">
+            // Show three buttons when feedback is available
+            <div className="flex justify-between w-full gap-2">
               <Button
                 variant="outline"
                 className="flex-1 flex items-center justify-center"
@@ -386,6 +416,14 @@ export function QuizDialog(
               >
                 <X className="w-4 h-4 mr-2" />
                 Close
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1 flex items-center justify-center"
+                onClick={handleFollowUpQuestion}
+              >
+                <MessageCircleQuestion className="w-4 h-4 mr-2" />
+                Follow-up
               </Button>
               <Button
                 className="flex-1 flex items-center justify-center"

@@ -124,7 +124,7 @@ class QuizGenerator:
 
         return questions_list[:num_follow_ups], answers_list[:num_follow_ups]
 
-    def generate_report(self, questions: List[str], answers: List[str], feedback: List[str]) -> str:        
+    def generate_report(self, questions: List[str], answers: List[str], feedback: List[str]) -> str:
         """
         Generate a concise report about the user's performance on the quiz.
 
@@ -163,7 +163,7 @@ class QuizGenerator:
 
         return chat_response.choices[0].message.content
 
-    def generate_questions(self, markdown_text: str, num_questions: int = 10) -> List[Tuple[str, str]]:
+    def generate_questions(self, markdown_text: str, num_questions: int = 1) -> List[Tuple[str, str]]:
         """
         Generate questions and answers from markdown text using Mistral AI.
 

@@ -34,6 +34,7 @@ class Session(object):
         self.decoded_docs = []
         self.concatenated_docs = ""
         self.questions_to_ask = []
+        self.followup_questions_to_ask = []
         self.answers_with_feedbacks = []
 
     def add_doc(self, base64_doc: str):
@@ -118,33 +119,80 @@ Page {i+1}:
 
         return self.questions_to_ask[0]["question"]
 
+    def generate_next_followup_question(self) -> str:
+        if self.followup_questions_to_ask:
+            return self.followup_questions_to_ask[0]["question"]
+
+        # Check if we have any answered questions to base follow-up questions on
+        if not self.answers_with_feedbacks:
+            raise ValueError("Cannot generate follow-up questions without any answered questions. Please answer at least one question first.")
+
+        if not self.concatenated_docs:
+            self.concatenated_docs = ""
+            for (i, doc) in enumerate(self.decoded_docs):
+                self.concatenated_docs += f"""
+Page {i+1}:
+{doc}
+
+"""
+
+        # Generate follow-up questions based on previous Q&A and feedback
+        questions_list, answers_list = self.generator.generate_follow_up_questions(
+            self.concatenated_docs,
+            [q["question"] for q in self.answers_with_feedbacks],
+            self.previous_answers,
+            [a["feedback"] for a in self.answers_with_feedbacks],
+            num_follow_ups=5
+        )
+
+        # Check if we got any questions back
+        if not questions_list or not answers_list:
+            raise ValueError("Failed to generate follow-up questions. Please try again or answer more questions first.")
+
+        for question, answer in zip(questions_list, answers_list):
+            typedQuestion: Question = {
+                "question": question,
+                "right_answer": answer
+            }
+            self.followup_questions_to_ask.append(typedQuestion)
+
+        if not self.followup_questions_to_ask:
+            raise ValueError("No follow-up questions were generated. Please try again.")
+
+        return self.followup_questions_to_ask[0]["question"]
+
     def generate_feedback(self, user_answer):
-        current_question = self.questions_to_ask[0]
-        feedback = self.generator.generate_feedback(self.concatenated_docs, current_question["question"], current_question["right_answer"], user_answer)
-        answered_question: AnsweredQuestion = {
-            "feedback": feedback,
-            "question": current_question["question"],
-            "right_answer": current_question["right_answer"],
-            "user_answer": user_answer
-        }
-        self.answers_with_feedbacks.append(answered_question)
-        self.questions_to_ask.pop(0)
-        return answered_question["feedback"]
+        # Check if we're answering a follow-up question or regular question
+        if self.followup_questions_to_ask:
+            current_question = self.followup_questions_to_ask[0]
+            feedback = self.generator.generate_feedback(self.concatenated_docs, current_question["question"], current_question["right_answer"], user_answer)
+            answered_question: AnsweredQuestion = {
+                "feedback": feedback,
+                "question": current_question["question"],
+                "right_answer": current_question["right_answer"],
+                "user_answer": user_answer
+            }
+            self.answers_with_feedbacks.append(answered_question)
+            self.followup_questions_to_ask.pop(0)
+            return answered_question["feedback"]
+        else:
+            current_question = self.questions_to_ask[0]
+            feedback = self.generator.generate_feedback(self.concatenated_docs, current_question["question"], current_question["right_answer"], user_answer)
+            answered_question: AnsweredQuestion = {
+                "feedback": feedback,
+                "question": current_question["question"],
+                "right_answer": current_question["right_answer"],
+                "user_answer": user_answer
+            }
+            self.answers_with_feedbacks.append(answered_question)
+            self.questions_to_ask.pop(0)
+            return answered_question["feedback"]
 
     @property
     def previous_answers(self) -> list[str]:
         """Extract user answers from answered questions"""
         return [answer["user_answer"] for answer in self.answers_with_feedbacks]
 
-    def follow_up_questions(self) -> list[str]:
-        return self.generator.generate_follow_up_questions(
-            self.concatenated_docs,
-            [q["question"] for q in self.questions_to_ask],
-            self.previous_answers,
-            [a["feedback"] for a in self.answers_with_feedbacks],
-            num_follow_ups=3
-        )
-    
     def generate_report(self) -> str:
         return self.generator.generate_report(
             self.concatenated_docs,

@@ -162,6 +162,23 @@ def post_session_answer(id: int, request: SessionAnswerRequest):
     session = sessions[id]
     return SessionAnswerResponse(response=session.generate_feedback(request.user_answer))
 
+class SessionQuestionResponse(BaseModel):
+    question: str
+@app.get("/session/{id}/question/followup", response_model=SessionQuestionResponse)
+def get_session_followup_question(id: int):
+    """
+    get next follow-up question for the quiz
+    """
+    if id not in sessions:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Session with id {id} not found"
+        )
+    session = sessions[id]
+    question = session.generate_next_followup_question()
+    return SessionQuestionResponse(question=question)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
