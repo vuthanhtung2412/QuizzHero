@@ -81,7 +81,8 @@ def process_multiple_images(image_paths: list[str], max_workers: int = 4) -> dic
                 print(f"Error processing {image_path}: {str(e)}")
                 results[image_path] = ""
     
-    return results
+    return results 
+
 
 def process_image_file_to_text(image_path: str) -> str:
     """
@@ -100,5 +101,3 @@ def process_image_file_to_text(image_path: str) -> str:
 
     # Use the existing base64 processing function
     return process_image_to_text(encoded_image)
-
-# process_image_to_text("../test-assets/page1.webp")
