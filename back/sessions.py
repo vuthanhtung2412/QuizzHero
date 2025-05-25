@@ -8,6 +8,8 @@ from typing import TypedDict, Optional
 from dataclasses import dataclass
 from quiz_generator import QuizGenerator
 
+NUMBER_GENERATED_QUESTION = 7
+
 class Question(TypedDict):
     question: str
     right_answer: str
@@ -53,8 +55,8 @@ class Session(object):
 
             # Remove data URL prefix if present
             clean_base64 = base64_doc
-            if ',' in base64_doc:
-                clean_base64 = base64_doc.split(',')[1]
+            if "," in base64_doc:
+                clean_base64 = base64_doc.split(",")[1]
 
             # Decode base64 to binary
             image_data = base64.b64decode(clean_base64)
@@ -65,7 +67,7 @@ class Session(object):
             filepath = os.path.join(temp_dir, filename)
 
             # Save the image
-            with open(filepath, 'wb') as f:
+            with open(filepath, "wb") as f:
                 f.write(image_data)
 
             print(f"✅ Saved image to: {filepath}")
@@ -93,9 +95,13 @@ class Session(object):
             decoded_doc = mistral_ocr.process_image_to_text(base64_doc)
             self.decoded_docs.append(decoded_doc)
 
-            print(f"📄 Processed image {i+1}/{len(base64_docs)}: {len(decoded_doc)} characters extracted")
+            print(
+                f"📄 Processed image {i + 1}/{len(base64_docs)}: {len(decoded_doc)} characters extracted"
+            )
 
-        print(f"✨ Completed processing {len(base64_docs)} images for session {self.id}")
+        print(
+            f"✨ Completed processing {len(base64_docs)} images for session {self.id}"
+        )
 
     def generate_next_question(self) -> str:
         if self.questions_to_ask:
@@ -103,18 +109,17 @@ class Session(object):
 
         if not self.concatenated_docs:
             self.concatenated_docs = ""
-            for (i, doc) in enumerate(self.decoded_docs):
+            for i, doc in enumerate(self.decoded_docs):
                 self.concatenated_docs += f"""
-Page {i+1}:
+Page {i + 1}:
 {doc}
 
 """
-        questions_list, answers_list = self.generator.generate_questions(self.concatenated_docs, 5)
+        questions_list, answers_list = self.generator.generate_questions(
+            self.concatenated_docs, NUMBER_GENERATED_QUESTION
+        )
         for question, answer in zip(questions_list, answers_list):
-            typedQuestion: Question = {
-                "question": question,
-                "right_answer": answer
-            }
+            typedQuestion: Question = {"question": question, "right_answer": answer}
             self.questions_to_ask.append(typedQuestion)
 
         return self.questions_to_ask[0]["question"]
@@ -192,6 +197,15 @@ Page {i+1}:
     def previous_answers(self) -> list[str]:
         """Extract user answers from answered questions"""
         return [answer["user_answer"] for answer in self.answers_with_feedbacks]
+
+    def follow_up_questions(self) -> list[str]:
+        return self.generator.generate_follow_up_questions(
+            self.concatenated_docs,
+            [q["question"] for q in self.questions_to_ask],
+            self.previous_answers,
+            [a["feedback"] for a in self.answers_with_feedbacks],
+            num_follow_ups=5,
+        )
 
     def generate_report(self) -> str:
         return self.generator.generate_report(

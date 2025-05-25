@@ -32,8 +32,12 @@ export async function GET(
       )
     }
 
-    const data = await response.json()
-    return NextResponse.json(data)
+    const { question, total, current } = await response.json()
+    return NextResponse.json({
+      question,
+      total,
+      current
+    })
 
   } catch (error) {
     console.error('Error getting follow-up question:', error)

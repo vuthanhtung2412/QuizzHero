@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 from quiz_generator import QuizGenerator
-from sessions import Session
+from sessions import Session, NUMBER_GENERATED_QUESTION
 
 # Load environment variables
 load_dotenv()
@@ -131,6 +131,9 @@ def add_session_doc(id: int, request: SessionDocRequest, response_model=SessionD
 
 class SessionQuestionResponse(BaseModel):
     question: str
+    total: int
+    current: int
+
 @app.get("/session/{id}/question", response_model=SessionQuestionResponse)
 def get_session_question(id: int):
     """
@@ -143,7 +146,12 @@ def get_session_question(id: int):
         )
     session = sessions[id]
     question = session.generate_next_question()
-    return SessionQuestionResponse(question=question)
+    current = NUMBER_GENERATED_QUESTION - len(session.questions_to_ask) + 1
+    return SessionQuestionResponse(
+        question=question,
+        total=NUMBER_GENERATED_QUESTION,
+        current=current
+    )
 
 class SessionAnswerRequest(BaseModel):
     user_answer: str
@@ -162,9 +170,12 @@ def post_session_answer(id: int, request: SessionAnswerRequest):
     session = sessions[id]
     return SessionAnswerResponse(response=session.generate_feedback(request.user_answer))
 
-class SessionQuestionResponse(BaseModel):
+class SessionFollowupQuestionResponse(BaseModel):
     question: str
-@app.get("/session/{id}/question/followup", response_model=SessionQuestionResponse)
+    total: int
+    current: int
+
+@app.get("/session/{id}/question/followup", response_model=SessionFollowupQuestionResponse)
 def get_session_followup_question(id: int):
     """
     get next follow-up question for the quiz
@@ -176,7 +187,14 @@ def get_session_followup_question(id: int):
         )
     session = sessions[id]
     question = session.generate_next_followup_question()
-    return SessionQuestionResponse(question=question)
+    # Calculate indexing for follow-up questions (they generate 5 at a time)
+    total_followup = 5
+    current_followup = total_followup - len(session.followup_questions_to_ask) + 1
+    return SessionFollowupQuestionResponse(
+        question=question,
+        total=total_followup,
+        current=current_followup
+    )
 
 
 if __name__ == "__main__":

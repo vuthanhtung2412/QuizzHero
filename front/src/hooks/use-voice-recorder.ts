@@ -17,6 +17,7 @@ export function useVoiceRecorder() {
   const [recordings, setRecordings] = useState<AudioRecording[]>([])
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isProcessingAnswer, setIsProcessingAnswer] = useState(false)
   const [sessionId, setSessionId] = useState(0)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -117,6 +118,10 @@ export function useVoiceRecorder() {
       if (!mediaRecorderRef.current) return resolve();
 
       mediaRecorderRef.current.onstop = async () => {
+        // Set processing state to true when we start API calls
+        setIsProcessingAnswer(true);
+        setIsRecording(false);
+
         const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         const audioUrl = URL.createObjectURL(audioBlob);
@@ -188,7 +193,8 @@ export function useVoiceRecorder() {
           streamRef.current = null;
         }
 
-        setIsRecording(false);
+        // Set processing to false when all API calls are complete
+        setIsProcessingAnswer(false);
         resolve();
       };
 
@@ -238,6 +244,7 @@ export function useVoiceRecorder() {
     recordings,
     hasPermission,
     isLoading,
+    isProcessingAnswer,
     sessionId,
     startRecording,
     stopRecording,

@@ -19,6 +19,8 @@ export function QuizDialog(
   }
 ) {
   const [open, setOpen] = useState(false)
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState<number | null>(null)
+  const [totalQuestions, setTotalQuestions] = useState<number | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null)
   const [questionError, setQuestionError] = useState<string | null>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -27,7 +29,6 @@ export function QuizDialog(
   const [isQuestionReady, setIsQuestionReady] = useState(false);
   const [userTranscript, setUserTranscript] = useState<string | null>(null)
   const [aiFeedback, setAiFeedback] = useState<string | null>(null)
-  const [isProcessingAnswer, setIsProcessingAnswer] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastPlayedFeedbackRef = useRef<string | null>(null);
 
@@ -36,6 +37,7 @@ export function QuizDialog(
     recordings,
     hasPermission,
     isLoading,
+    isProcessingAnswer,
     sessionId,
     toggleRecording,
     cleanup,
@@ -115,7 +117,6 @@ export function QuizDialog(
           setQuestionError(null);
           setUserTranscript(null);
           setAiFeedback(null);
-          setIsProcessingAnswer(false);
           setIsLoadingQuestion(true);
           setIsQuestionReady(false);
 
@@ -138,6 +139,8 @@ export function QuizDialog(
             if (questionResponse.ok) {
               const questionData = await questionResponse.json();
               setCurrentQuestion(questionData.question);
+              setCurrentQuestionNumber(questionData.current);
+              setTotalQuestions(questionData.total);
               setIsLoadingQuestion(false);
               console.log("Here is the obtained question", questionData.question)
 
@@ -170,7 +173,6 @@ export function QuizDialog(
       if (latestRecording.transcript) {
         setUserTranscript(latestRecording.transcript);
         setAiFeedback(latestRecording.feedback || null);
-        setIsProcessingAnswer(false);
 
         // Auto-play feedback audio when it becomes available (only if we haven't played this feedback before)
         if (latestRecording.feedback &&
@@ -189,14 +191,8 @@ export function QuizDialog(
     if (isRecording) {
       setUserTranscript(null);
       setAiFeedback(null);
-      setIsProcessingAnswer(false);
       // Reset the last played feedback ref when starting a new recording
       lastPlayedFeedbackRef.current = null;
-    } else if (!isRecording && recordings.length > 0) {
-      const latestRecording = recordings[recordings.length - 1];
-      if (!latestRecording.transcript) {
-        setIsProcessingAnswer(true);
-      }
     }
   }, [isRecording, recordings])
 
@@ -212,7 +208,6 @@ export function QuizDialog(
       // Reset previous answer and feedback before loading new question
       setUserTranscript(null);
       setAiFeedback(null);
-      setIsProcessingAnswer(false);
       setIsLoadingQuestion(true);
       setIsQuestionReady(false);
       setQuestionError(null);
@@ -221,6 +216,8 @@ export function QuizDialog(
       if (questionResponse.ok) {
         const questionData = await questionResponse.json();
         setCurrentQuestion(questionData.question);
+        setCurrentQuestionNumber(questionData.current);
+        setTotalQuestions(questionData.total);
         setIsLoadingQuestion(false);
 
         // Play audio and mark as ready when audio finishes
@@ -242,7 +239,6 @@ export function QuizDialog(
       // Reset previous answer and feedback before loading follow-up question
       setUserTranscript(null);
       setAiFeedback(null);
-      setIsProcessingAnswer(false);
       setIsLoadingQuestion(true);
       setIsQuestionReady(false);
       setQuestionError(null);
@@ -251,6 +247,8 @@ export function QuizDialog(
       if (questionResponse.ok) {
         const questionData = await questionResponse.json();
         setCurrentQuestion(questionData.question);
+        setCurrentQuestionNumber(questionData.current);
+        setTotalQuestions(questionData.total);
         setIsLoadingQuestion(false);
 
         // Play audio and mark as ready when audio finishes
@@ -277,7 +275,11 @@ export function QuizDialog(
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle> {`Quiz session ${sessionId}`} </DialogTitle>
+          <DialogTitle>
+            {currentQuestionNumber && totalQuestions
+              ? `Question ${currentQuestionNumber} / ${totalQuestions}`
+              : "Quiz Time !"}
+          </DialogTitle>
         </DialogHeader>
 
         {/* Scrollable Content Area */}
@@ -381,9 +383,9 @@ export function QuizDialog(
                 variant={isRecording ? "destructive" : "default"}
                 className="w-20 h-20 rounded-full"
                 onClick={toggleRecording}
-                disabled={hasPermission === false || isLoading || !isQuestionReady}
+                disabled={hasPermission === false || isLoading || !isQuestionReady || isProcessingAnswer}
               >
-                {isLoading ? (
+                {isLoading || isProcessingAnswer ? (
                   <Loader2 className="w-8 h-8 animate-spin" />
                 ) : isRecording ? (
                   <Square className="w-8 h-8" />
@@ -395,9 +397,11 @@ export function QuizDialog(
               <div className="text-sm text-muted-foreground text-center">
                 {isLoading
                   ? "Setting up microphone..."
-                  : isRecording
-                    ? "Recording answer... Click to stop"
-                    : "Click to answer"
+                  : isProcessingAnswer
+                    ? "Processing answer..."
+                    : isRecording
+                      ? "Recording answer... Click to stop"
+                      : "Click to answer"
                 }
               </div>
             </>
@@ -407,32 +411,54 @@ export function QuizDialog(
 
         <DialogFooter>
           {aiFeedback ? (
-            // Show three buttons when feedback is available
-            <div className="flex justify-between w-full gap-2">
-              <Button
-                variant="outline"
-                className="flex-1 flex items-center justify-center"
-                onClick={() => setOpen(false)}
-              >
-                <X className="w-4 h-4 mr-2" />
-                Close
-              </Button>
-              <Button
-                variant="secondary"
-                className="flex-1 flex items-center justify-center"
-                onClick={handleFollowUpQuestion}
-              >
-                <MessageCircleQuestion className="w-4 h-4 mr-2" />
-                Follow-up
-              </Button>
-              <Button
-                className="flex-1 flex items-center justify-center"
-                onClick={handleNextQuestion}
-              >
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Next Question
-              </Button>
-            </div>
+            // Check if we've completed all 7 regular questions
+            currentQuestionNumber && currentQuestionNumber >= 7 ? (
+              // Show only follow-up and close buttons after 7 questions
+              <div className="flex justify-between w-full gap-4">
+                <Button
+                  variant="outline"
+                  className="flex-1 flex items-center justify-center"
+                  onClick={() => setOpen(false)}
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Close
+                </Button>
+                <Button
+                  className="flex-1 flex items-center justify-center"
+                  onClick={handleFollowUpQuestion}
+                >
+                  <MessageCircleQuestion className="w-4 h-4 mr-2" />
+                  Follow-up Question
+                </Button>
+              </div>
+            ) : (
+              // Show three buttons when feedback is available and still have regular questions
+              <div className="flex justify-between w-full gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 flex items-center justify-center"
+                  onClick={() => setOpen(false)}
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Close
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="flex-1 flex items-center justify-center"
+                  onClick={handleFollowUpQuestion}
+                >
+                  <MessageCircleQuestion className="w-4 h-4 mr-2" />
+                  Follow-up
+                </Button>
+                <Button
+                  className="flex-1 flex items-center justify-center"
+                  onClick={handleNextQuestion}
+                >
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Next Question
+                </Button>
+              </div>
+            )
           ) : (
             // Show only close button when no feedback yet
             <Button

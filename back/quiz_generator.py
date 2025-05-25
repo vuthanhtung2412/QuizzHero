@@ -163,7 +163,7 @@ class QuizGenerator:
 
         return chat_response.choices[0].message.content
 
-    def generate_questions(self, markdown_text: str, num_questions: int = 1) -> List[Tuple[str, str]]:
+    def generate_questions(self, markdown_text: str, num_questions: int = 7) -> List[Tuple[str, str]]:
         """
         Generate questions and answers from markdown text using Mistral AI.
 
