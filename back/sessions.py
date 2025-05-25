@@ -130,3 +130,17 @@ Page {i+1}:
         self.answers_with_feedbacks.append(answered_question)
         self.questions_to_ask.pop(0)
         return answered_question["feedback"]
+
+    @property
+    def previous_answers(self) -> list[str]:
+        """Extract user answers from answered questions"""
+        return [answer["user_answer"] for answer in self.answers_with_feedbacks]
+
+    def follow_up_questions(self) -> list[str]:
+        return self.generator.generate_follow_up_questions(
+            self.concatenated_docs,
+            [q["question"] for q in self.questions_to_ask],
+            self.previous_answers,
+            [a["feedback"] for a in self.answers_with_feedbacks],
+            num_follow_ups=3
+        )
