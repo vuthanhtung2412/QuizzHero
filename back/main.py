@@ -142,7 +142,8 @@ def get_session_question(id: int):
             detail=f"Session with id {id} not found"
         )
     session = sessions[id]
-    return SessionQuestionResponse(question=session.generate_next_question())
+    question = session.generate_next_question()
+    return SessionQuestionResponse(question=question)
 
 class SessionAnswerRequest(BaseModel):
     user_answer: str
