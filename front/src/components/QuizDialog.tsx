@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog"
-import { Mic, X, Square, Loader2 } from "lucide-react"
+import { Mic, X, Square, Loader2, Volume2 } from "lucide-react"
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder"
 
 export function QuizDialog(
@@ -22,10 +22,12 @@ export function QuizDialog(
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null)
   const [questionError, setQuestionError] = useState<string | null>(null)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isPlayingFeedback, setIsPlayingFeedback] = useState(false);
   const [userTranscript, setUserTranscript] = useState<string | null>(null)
   const [aiFeedback, setAiFeedback] = useState<string | null>(null)
   const [isProcessingAnswer, setIsProcessingAnswer] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const lastPlayedFeedbackRef = useRef<string | null>(null);
 
   const {
     isRecording,
@@ -70,6 +72,33 @@ export function QuizDialog(
         console.error('Error playing audio:', error);
       } finally {
         setIsPlayingAudio(false);
+      }
+    };
+
+    const playFeedbackAudio = async (feedbackText: string) => {
+      try {
+        setIsPlayingFeedback(true);
+        const response = await fetch('/api/t2p', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ transcript: feedbackText }),
+        });
+
+        if (!response.ok) throw new Error('Failed to get feedback audio');
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        if (audioRef.current) {
+          audioRef.current.src = audioUrl;
+          await audioRef.current.play();
+        }
+      } catch (error) {
+        console.error('Error playing feedback audio:', error);
+      } finally {
+        setIsPlayingFeedback(false);
       }
     };
 
@@ -128,6 +157,15 @@ export function QuizDialog(
         setUserTranscript(latestRecording.transcript);
         setAiFeedback(latestRecording.feedback || null);
         setIsProcessingAnswer(false);
+
+        // Auto-play feedback audio when it becomes available (only if we haven't played this feedback before)
+        if (latestRecording.feedback &&
+            latestRecording.feedback !== lastPlayedFeedbackRef.current &&
+            !isPlayingAudio &&
+            !isPlayingFeedback) {
+          lastPlayedFeedbackRef.current = latestRecording.feedback;
+          playFeedbackAudio(latestRecording.feedback);
+        }
       }
     }
   }, [recordings])
@@ -138,6 +176,8 @@ export function QuizDialog(
       setUserTranscript(null);
       setAiFeedback(null);
       setIsProcessingAnswer(false);
+      // Reset the last played feedback ref when starting a new recording
+      lastPlayedFeedbackRef.current = null;
     } else if (!isRecording && recordings.length > 0) {
       const latestRecording = recordings[recordings.length - 1];
       if (!latestRecording.transcript) {
@@ -200,7 +240,15 @@ export function QuizDialog(
         {/* AI Feedback Display */}
         {aiFeedback && (
           <div className="bg-purple-50 p-4 rounded-lg mb-4">
-            <p className="text-sm font-medium text-purple-900 mb-2">AI Feedback:</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-purple-900">AI Feedback:</p>
+              {isPlayingFeedback && (
+                <div className="flex items-center">
+                  <Volume2 className="w-4 h-4 text-purple-600 mr-1" />
+                  <span className="text-xs text-purple-600">Playing...</span>
+                </div>
+              )}
+            </div>
             <p className="text-base text-purple-800">{aiFeedback}</p>
           </div>
         )}
@@ -211,7 +259,10 @@ export function QuizDialog(
               Microphone access denied. Please enable microphone permissions and try again.
             </div>
           )}
-        <audio ref={audioRef} onEnded={() => setIsPlayingAudio(false)} />
+        <audio ref={audioRef} onEnded={() => {
+          setIsPlayingAudio(false);
+          setIsPlayingFeedback(false);
+        }} />
 
           <Button
             size="lg"
