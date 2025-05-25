@@ -133,6 +133,45 @@ class QuizGenerator:
 
         return follow_ups
 
+    def generate_report(self, questions: List[str], answers: List[str], feedback: List[str]) -> str:        
+        """
+        Generate a concise report about the user's performance on the quiz.
+
+        Args:
+            markdown_text (str): The original text the questions were based on
+            questions (List[str]): List of questions asked
+            answers (List[str]): List of user's answers
+            feedback (List[str]): List of feedback given for each answer
+
+        Returns:
+            str: A concise report summarizing the user's performance and areas for improvement
+        """
+        prompt = f"""Based on the following questions, answers, and feedback, generate a concise report that:
+        1. Summarizes the user's overall performance
+        2. Identifies 2-3 specific areas where the user needs improvement
+        3. Provides brief, actionable suggestions for improvement
+
+        Keep the report short and focused on actionable insights.
+
+        Questions and Answers:
+        {chr(10).join([f"Q: {q}\nA: {a}\nFeedback: {f}" for q, a, f in zip(questions, answers, feedback)])}
+
+        Generate a concise report:"""
+
+        messages = [
+            {"role": "system", "content": "You are an educational AI that generates concise, actionable performance reports."},
+            {"role": "user", "content": prompt}
+        ]
+
+        chat_response = self.client.chat.complete(
+            model="mistral-large-latest",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=300
+        )
+
+        return chat_response.choices[0].message.content
+
     def generate_questions(self, markdown_text: str, num_questions: int = 10) -> List[Tuple[str, str]]:
         """
         Generate questions and answers from markdown text using Mistral AI.
