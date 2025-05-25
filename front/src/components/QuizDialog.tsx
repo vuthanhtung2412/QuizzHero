@@ -270,7 +270,7 @@ export function QuizDialog(
       <DialogTrigger asChild>
         <Button variant="outline">
           <Mic className="w-4 h-4 mr-2" />
-          Start Quiz
+          Start Quizz
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
@@ -278,7 +278,7 @@ export function QuizDialog(
           <DialogTitle>
             {currentQuestionNumber && totalQuestions
               ? `Question ${currentQuestionNumber} / ${totalQuestions}`
-              : "Quiz Time !"}
+              : "Quizz Time !"}
           </DialogTitle>
         </DialogHeader>
 
