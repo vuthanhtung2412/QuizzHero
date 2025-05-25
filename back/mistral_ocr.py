@@ -3,6 +3,7 @@ import base64
 from mistralai import Mistral
 from dotenv import load_dotenv
 import quiz_generator
+from concurrent.futures import ThreadPoolExecutor, as_completed
 load_dotenv()
 
 def process_image_to_text(base64_image: str) -> str:
@@ -50,6 +51,37 @@ def process_image_to_text(base64_image: str) -> str:
         print(f"Error during OCR processing: {str(e)}")
         # Return a fallback message instead of crashing
         return f"[OCR Error: Could not process image - {str(e)}]"
+    
+def process_multiple_images(image_paths: list[str], max_workers: int = 4) -> dict[str, str]:
+    """
+    Process multiple images in parallel using ThreadPoolExecutor.
+    
+    Args:
+        image_paths (list[str]): List of paths to image files
+        max_workers (int): Maximum number of worker threads (default: 4)
+        
+    Returns:
+        dict[str, str]: Dictionary mapping image paths to their extracted text
+    """
+    results = {}
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_path = {
+            executor.submit(process_image_to_text, image_path): image_path 
+            for image_path in image_paths
+        }
+        
+        # Process completed futures as they come in
+        for future in as_completed(future_to_path):
+            image_path = future_to_path[future]
+            try:
+                extracted_text = future.result()
+                results[image_path] = extracted_text
+            except Exception as e:
+                print(f"Error processing {image_path}: {str(e)}")
+                results[image_path] = ""
+    
+    return results
 
 def process_image_file_to_text(image_path: str) -> str:
     """
