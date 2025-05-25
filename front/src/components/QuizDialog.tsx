@@ -27,7 +27,6 @@ export function QuizDialog(
   const [isQuestionReady, setIsQuestionReady] = useState(false);
   const [userTranscript, setUserTranscript] = useState<string | null>(null)
   const [aiFeedback, setAiFeedback] = useState<string | null>(null)
-  const [isProcessingAnswer, setIsProcessingAnswer] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastPlayedFeedbackRef = useRef<string | null>(null);
 
@@ -36,6 +35,7 @@ export function QuizDialog(
     recordings,
     hasPermission,
     isLoading,
+    isProcessingAnswer,
     sessionId,
     toggleRecording,
     cleanup,
@@ -115,7 +115,6 @@ export function QuizDialog(
           setQuestionError(null);
           setUserTranscript(null);
           setAiFeedback(null);
-          setIsProcessingAnswer(false);
           setIsLoadingQuestion(true);
           setIsQuestionReady(false);
 
@@ -170,7 +169,6 @@ export function QuizDialog(
       if (latestRecording.transcript) {
         setUserTranscript(latestRecording.transcript);
         setAiFeedback(latestRecording.feedback || null);
-        setIsProcessingAnswer(false);
 
         // Auto-play feedback audio when it becomes available (only if we haven't played this feedback before)
         if (latestRecording.feedback &&
@@ -189,14 +187,8 @@ export function QuizDialog(
     if (isRecording) {
       setUserTranscript(null);
       setAiFeedback(null);
-      setIsProcessingAnswer(false);
       // Reset the last played feedback ref when starting a new recording
       lastPlayedFeedbackRef.current = null;
-    } else if (!isRecording && recordings.length > 0) {
-      const latestRecording = recordings[recordings.length - 1];
-      if (!latestRecording.transcript) {
-        setIsProcessingAnswer(true);
-      }
     }
   }, [isRecording, recordings])
 
@@ -212,7 +204,6 @@ export function QuizDialog(
       // Reset previous answer and feedback before loading new question
       setUserTranscript(null);
       setAiFeedback(null);
-      setIsProcessingAnswer(false);
       setIsLoadingQuestion(true);
       setIsQuestionReady(false);
       setQuestionError(null);
@@ -351,9 +342,9 @@ export function QuizDialog(
                 variant={isRecording ? "destructive" : "default"}
                 className="w-20 h-20 rounded-full"
                 onClick={toggleRecording}
-                disabled={hasPermission === false || isLoading || !isQuestionReady}
+                disabled={hasPermission === false || isLoading || !isQuestionReady || isProcessingAnswer}
               >
-                {isLoading ? (
+                {isLoading || isProcessingAnswer ? (
                   <Loader2 className="w-8 h-8 animate-spin" />
                 ) : isRecording ? (
                   <Square className="w-8 h-8" />
@@ -365,9 +356,11 @@ export function QuizDialog(
               <div className="text-sm text-muted-foreground text-center">
                 {isLoading
                   ? "Setting up microphone..."
-                  : isRecording
-                    ? "Recording answer... Click to stop"
-                    : "Click to answer"
+                  : isProcessingAnswer
+                    ? "Processing answer..."
+                    : isRecording
+                      ? "Recording answer... Click to stop"
+                      : "Click to answer"
                 }
               </div>
             </>
