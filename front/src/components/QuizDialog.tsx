@@ -113,6 +113,9 @@ export function QuizDialog(
           // Reset states and start loading
           setCurrentQuestion(null);
           setQuestionError(null);
+          setUserTranscript(null);
+          setAiFeedback(null);
+          setIsProcessingAnswer(false);
           setIsLoadingQuestion(true);
           setIsQuestionReady(false);
 
@@ -205,13 +208,32 @@ export function QuizDialog(
   }, [cleanup])
 
   const handleNextQuestion = async () => {
-    const questionResponse = await fetch(`/api/session/${sessionId}/question`);
-    if (questionResponse.ok) {
-      const questionData = await questionResponse.json();
-      setCurrentQuestion(questionData.question);
-      playAudio(questionData.question)
-    } else {
+    try {
+      // Reset previous answer and feedback before loading new question
+      setUserTranscript(null);
+      setAiFeedback(null);
+      setIsProcessingAnswer(false);
+      setIsLoadingQuestion(true);
+      setIsQuestionReady(false);
+      setQuestionError(null);
+
+      const questionResponse = await fetch(`/api/session/${sessionId}/question`);
+      if (questionResponse.ok) {
+        const questionData = await questionResponse.json();
+        setCurrentQuestion(questionData.question);
+        setIsLoadingQuestion(false);
+
+        // Play audio and mark as ready when audio finishes
+        await playAudio(questionData.question);
+        setIsQuestionReady(true);
+      } else {
+        setQuestionError('Failed to load question');
+        setIsLoadingQuestion(false);
+      }
+    } catch (error) {
+      console.error('Error loading next question:', error);
       setQuestionError('Failed to load question');
+      setIsLoadingQuestion(false);
     }
   }
 
