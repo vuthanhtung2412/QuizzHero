@@ -31,8 +31,8 @@ class QuizGenerator:
         """
         prompt = f"""Give a one-sentence personalized feedback on the answer. Use "you" and "your" to make it more personal.
         If the answer is correct, start with encouraging phrases like "Well done!", "Great job!", or "Keep going!" before giving the feedback.
-        If the answer is incorrect, start with encouraging phrases like "No worries!", "Keep going!", or "You're getting there!" before explaining what was wrong and giving a hint.
-        If the user doesn't know the answer, be encouraging and give a hint about where to find the answer in the text.
+        If the answer is incorrect or incomplete, start with encouraging phrases like "No worries!", "Keep going!", or "You're getting there!" before explaining what was wrong.
+        Include the correct answer when the user's answer is incorrect or incomplete but explain why the user's answer is wrong.
         If the answer is correct but too detailed, suggest how to make it more concise.
 
         Context:
@@ -42,13 +42,12 @@ class QuizGenerator:
         Correct answer: {right_answer}
         Your answer: {user_answer}
 
-        Keep it to one sentence and make it encouraging:"""
+        Keep it to one sentence and make it encouraging. If the answer is wrong, include the correct answer:"""
 
         messages = [
-            {"role": "system", "content": "You are a supportive teacher providing personalized, encouraging feedback on answers."},
+            {"role": "system", "content": "You are a supportive teacher providing personalized, encouraging feedback on answers. Always include the correct answer when the user's answer is wrong."},
             {"role": "user", "content": prompt}
         ]
-
 
         chat_response = self.client.chat.complete(
             model="mistral-large-latest",
@@ -146,14 +145,22 @@ class QuizGenerator:
             List[Tuple[str, str]]: List of (question, answer) pairs
         """
         # Create a prompt for the AI to generate questions and answers
-        prompt = f"""Based on the following text, generate {num_questions} clear and concise questions that test understanding of the content.
+        prompt = f"""Based on the following text, generate {num_questions} engaging and fun questions that test understanding of the content.
         Guidelines for questions:
-        - Be direct and specific
-        - Avoid phrases like "according to the text" or "based on the text"
-        - Focus on key concepts and important details
-        - Make questions self-contained and clear
-        - Use active voice
-        - Avoid redundant information
+        - Make questions interactive and engaging
+        - Use creative formats like:
+          * "Imagine you're..." scenarios
+          * "If you had to choose..." dilemmas
+          * "How would you explain..." challenges
+          * "What would happen if..." hypotheticals
+          * "Compare and contrast..." analysis
+          * "Design a..." creative tasks
+        - Avoid basic "what is..." or "define..." questions unless necessary
+        - Make questions feel like a conversation rather than a test
+        - Include questions that require critical thinking
+        - Mix different types of questions to keep it interesting
+        - Make questions relatable to real-world situations
+        - Use active and engaging language
 
         Format the output as a list of strings representing question and answer pair:
         {{
