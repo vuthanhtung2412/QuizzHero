@@ -13,3 +13,9 @@ After finishing all the questions, the user will receive a precise summarization
 - Voice: Elevenlabs
 - AI: Mistral
 - API: FastAPI
+
+# DEMO
+
+
+https://github.com/user-attachments/assets/9b37fa21-c1d2-4bda-818c-b2ecf9a7b30d
+
