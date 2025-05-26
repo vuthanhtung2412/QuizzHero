@@ -7,15 +7,44 @@ The idea is that the conversation between the AI and the student should be conve
 The AI tries to keep the student motivated to keep going.
 After finishing all the questions, the user will receive a precise summarization / report. The AI will respond e.g. on which aspects the student should focus on. 
 
+# SHORT DEMO
+
+https://github.com/user-attachments/assets/9caaae37-543f-4f02-986a-2b1385a4813d
+
 # Used Tools
 - Backend: FastAPI
 - Frontend: NextJS
 - Voice: Elevenlabs
 - AI: Mistral
+  
+# Set up 
 
-# SHORT DEMO
+## Set Mistral and Elevenlabs API keys
 
-https://github.com/user-attachments/assets/9caaae37-543f-4f02-986a-2b1385a4813d
+``` bash
+export MISTRAL_API_KEY=
+export ELEVENLABS_API_KEY=
+```
+
+## Set up env
+
+``` bash
+cd back
+python3 -m venv venv
+./venv/bin/activate
+pip install -r requirements.txt
+cd ../front
+pnpm i
+```
+
+## Run app
+
+``` bash
+# Frontend
+pnpm dev
+# Backend
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
 
 # FULL DEMO
 
