@@ -16,6 +16,13 @@ https://github.com/user-attachments/assets/9caaae37-543f-4f02-986a-2b1385a4813d
 - Frontend: NextJS
 - Voice: Elevenlabs
 - AI: Mistral
+
+# Features
+
+- Understand taken notes
+- Generate Quizz
+- Answer evaluation
+- Follow up question for lacking knowledge
   
 # Set up 
 
